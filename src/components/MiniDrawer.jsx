@@ -23,7 +23,7 @@ export default function MiniDrawer() {
       <CssBaseline />
       <CustomAppBar open={open} handleDrawerOpen={handleDrawerOpen} />
       <CustomDrawer open={open} handleDrawerClose={handleDrawerClose} />
-      <Box component="main">
+      <Box component="main" width="100%">
         <DrawerHeader />
         <CodeEditor />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }} />
