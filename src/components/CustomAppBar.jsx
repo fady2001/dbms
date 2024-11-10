@@ -4,6 +4,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Typography from '@mui/material/Typography';
 import {AppBar} from './styles'; 
+import ModeSwitch from './ModeSwitch';
 
 export default function CustomAppBar({ open, handleDrawerOpen }) {
   return (
@@ -22,6 +23,7 @@ export default function CustomAppBar({ open, handleDrawerOpen }) {
           Mini variant drawer
         </Typography>
       </Toolbar>
+      <ModeSwitch />
     </AppBar>
   );
 }
