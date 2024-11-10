@@ -1,6 +1,7 @@
 import { styled } from '@mui/material/styles';
 import MuiAppBar from '@mui/material/AppBar';
 import MuiDrawer from '@mui/material/Drawer';
+import { Switch } from '@mui/material';
 
 const drawerWidth = 240;
 
@@ -82,7 +83,7 @@ export const Drawer = styled(MuiDrawer, {
   ],
 }));
 
-const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+export const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
   height: 34,
   padding: 7,

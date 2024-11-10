@@ -8,7 +8,7 @@ import ModeSwitch from './ModeSwitch';
 
 export default function CustomAppBar({ open, handleDrawerOpen }) {
   return (
-    <AppBar position="fixed" open={open}>
+    <AppBar position="fixed" open={open} sx={{display:'flex' , flexDirection:"row" ,justifyContent:"space-between",alignItems:'center'}}>
       <Toolbar>
         <IconButton
           color="inherit"
