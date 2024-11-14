@@ -8,21 +8,11 @@ import { DrawerHeader } from './styles';
 import DataGrid from './DataGrid';
 
 export default function MiniDrawer() {
-  const [open, setOpen] = React.useState(false);
-
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <CustomAppBar open={open} handleDrawerOpen={handleDrawerOpen} />
-      <CustomDrawer open={open} handleDrawerClose={handleDrawerClose} />
+      <CustomAppBar />
+      <CustomDrawer />
       <Box component="main" width="100%">
         <DrawerHeader />
         <CodeEditor />

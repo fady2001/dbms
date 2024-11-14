@@ -8,7 +8,7 @@ import ModeSwitch from "./ModeSwitch";
 import { Box } from "@mui/material";
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 
-export default function CustomAppBar({ open, handleDrawerOpen }) {
+export default function CustomAppBar() {
   // Ref to the Play button
   const playButtonRef = React.useRef(null);
 
@@ -35,7 +35,6 @@ export default function CustomAppBar({ open, handleDrawerOpen }) {
   return (
     <AppBar
       position="fixed"
-      open={open}
       sx={{
         display: "flex",
         flexDirection: "row",
@@ -44,15 +43,6 @@ export default function CustomAppBar({ open, handleDrawerOpen }) {
       }}
     >
       <Toolbar>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          onClick={handleDrawerOpen}
-          edge="start"
-          sx={{ marginRight: 5, ...(open && { display: "none" }) }}
-        >
-          <MenuIcon />
-        </IconButton>
         <Typography variant="h6" noWrap>
           Mini variant drawer
         </Typography>
@@ -61,10 +51,9 @@ export default function CustomAppBar({ open, handleDrawerOpen }) {
         <IconButton
           color="inherit"
           aria-label="play button"
-          onClick={handleDrawerOpen} // Replace with your desired function
           edge="start"
-          sx={{ marginRight: 5, ...(open && { display: "none" }) }}
-          ref={playButtonRef} // Assign the ref here
+          sx={{ marginRight: 5 }}
+          ref={playButtonRef}
         >
           <PlayCircleFilledIcon color="success" fontSize="large" />
         </IconButton>
