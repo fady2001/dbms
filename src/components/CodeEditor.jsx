@@ -17,7 +17,7 @@ export default function CodeEditor() {
   };
 
   return (
-    <div style={{ border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden' }}>
+    <div style={{ border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden', height:"40%" }}>
       <CodeMirror
         value={code} // Set value of the editor
         options={{

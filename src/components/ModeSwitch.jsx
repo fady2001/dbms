@@ -6,6 +6,6 @@ export default function ModeSwitch() {
   const { toggleTheme } = useThemeMode();
 
   return (
-    <MaterialUISwitch sx={{ m: 1 }} onClick={()=>toggleTheme()}/>
+    <MaterialUISwitch sx={{ m: 1,marginRight:4 }} onClick={()=>toggleTheme()}/>
   );
 }
