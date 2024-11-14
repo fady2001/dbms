@@ -8,7 +8,7 @@ import Collapse from '@mui/material/Collapse';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import database from './database.png';
+import database from '../assets/database.png';
 
 const items1 = ['DB1', 'DB2', 'DB3', 'DB4'];
 const tables = ['Table1', 'Table2', 'Table3', 'Table4'];
