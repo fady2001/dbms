@@ -3,7 +3,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import { useDialog } from '../contexts/DialogProvider';
-import CustomDialog from './Dialog';
+import CustomDialog from './CustomDialog';
 
 export default function DatabaseButtons() {
   const { openDialog } = useDialog();
@@ -35,7 +35,7 @@ export default function DatabaseButtons() {
     <Toolbar sx={{position:"sticky"}}>
       {/* First Group: Database Actions */}
       <ButtonGroup variant="outlined" color="primary" aria-label="database actions group">
-        <Button onClick={() => openDialog('Hello Dialog', 'This is a sample dialog content.')}>Create DB</Button>
+        <Button onClick={() => openDialog('Database name')}>Create DB</Button>
         <Button onClick={() => console.log('Drop Database')}>Drop DB</Button>
         <Button onClick={() => console.log('Rename Database')}>Rename DB</Button>
       </ButtonGroup>
