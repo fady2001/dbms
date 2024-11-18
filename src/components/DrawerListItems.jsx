@@ -8,12 +8,15 @@ import Collapse from '@mui/material/Collapse';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import database from '../assets/database.png';
+import darkDB from '../assets/darkDB.png';
+import lightDB from '../assets/lightDB.png';
+import { useThemeMode } from '../contexts/ThemeToggle';
 
 const items1 = ['DB1', 'DB2', 'DB3', 'DB4'];
 const tables = ['Table1', 'Table2', 'Table3', 'Table4'];
 
 export default function DrawerListItems() {
+  const { mode } = useThemeMode();
   const [openIndex, setOpenIndex] = React.useState(null);
 
   const handleCollapseClick = (index) => {
@@ -31,7 +34,7 @@ export default function DrawerListItems() {
                 onClick={() => handleCollapseClick(index)}
               >
                 <ListItemIcon sx={{ minWidth: 0, mr: 3, justifyContent: 'center' }}>
-                  <img src={database} width="25px"/>
+                  {mode === 'light' ? <img src={darkDB} width="25px" alt="DB" /> : <img src={lightDB} width="25px" alt="DB" />}
                 </ListItemIcon>
                 <ListItemText primary={text} sx={{ opacity: 1 }} />
                 {openIndex === index ? <ExpandLess /> : <ExpandMore />}
