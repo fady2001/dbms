@@ -2,8 +2,12 @@ import * as React from 'react';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
+import { useDialog } from '../contexts/DialogProvider';
+import CustomDialog from './Dialog';
 
 export default function DatabaseButtons() {
+  const { openDialog } = useDialog();
+
   // Ref to the Play button
   const playButtonRef = React.useRef(null);
 
@@ -31,7 +35,7 @@ export default function DatabaseButtons() {
     <Toolbar sx={{position:"sticky"}}>
       {/* First Group: Database Actions */}
       <ButtonGroup variant="outlined" color="primary" aria-label="database actions group">
-        <Button onClick={() => console.log('Create Database')}>Create DB</Button>
+        <Button onClick={() => openDialog('Hello Dialog', 'This is a sample dialog content.')}>Create DB</Button>
         <Button onClick={() => console.log('Drop Database')}>Drop DB</Button>
         <Button onClick={() => console.log('Rename Database')}>Rename DB</Button>
       </ButtonGroup>
@@ -48,6 +52,7 @@ export default function DatabaseButtons() {
       <Button variant="contained" color="success" sx={{ ml: 2 }} ref={playButtonRef} onClick={() => console.log('Run Query')}>
         Run Query
       </Button>
+      <CustomDialog />
     </Toolbar>
   );
 }
