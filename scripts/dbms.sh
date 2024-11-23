@@ -8,10 +8,12 @@
 
 # Load functions from database.sh
 source ./database.sh
+source ./table.sh
 
 
 # flag to check if the database is connected
 connected=1
+# flag to check if the application should exit
 exit=0
 
 # Main function that runs the application
