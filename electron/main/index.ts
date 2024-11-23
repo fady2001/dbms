@@ -4,9 +4,12 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
 import { update } from './update'
+import { exec } from 'child_process';
+
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const script_path = path.join(path.resolve(__dirname, '../..'), 'scripts')
 
 // The built directory structure
 //
@@ -120,4 +123,17 @@ ipcMain.handle('open-win', (_, arg) => {
   } else {
     childWindow.loadFile(indexHtml, { hash: arg })
   }
+})
+
+ipcMain.on('get-databases', (event) => {
+  // execute the bash script inside scripts folder
+  console.log(`${script_path}`);
+  exec(`${script_path}/database.sh list`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    event.sender.send('databases', stdout)
+  });
 })

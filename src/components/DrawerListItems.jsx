@@ -23,6 +23,13 @@ export default function DrawerListItems() {
     setOpenIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
+  const ipcRenderer = window.ipcRenderer;
+  ipcRenderer.send("get-databases");
+
+  ipcRenderer.on("databases", (event, args) => {
+    console.log(args);
+  });
+
   return (
     <div>
       <List>
