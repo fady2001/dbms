@@ -70,24 +70,24 @@ function connectToDatabase() {
     # check if we have read permission in the current directory
     if [[ $(hasReadPermission) -eq 0 ]]; then
         echo "No read permission in the current directory"
-        return
+        return 1
     fi
 
     # check if we have execute permission in the current directory
     if [[ $(hasExecutePermission) -eq 0 ]]; then
         echo "No execute permission in the current directory"
-        return
+        return 1
     fi
 
     # check if the database exists    
     if [[ $(dirExists $1) -eq 1 ]]; then
         cd $1
         echo "Connected to $1"
+        return 0
     else
         echo "Database does not exist"
-        return
+        return 1
     fi
-
 }
 
 # function that drop a database
