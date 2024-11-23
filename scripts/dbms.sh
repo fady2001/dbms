@@ -15,6 +15,8 @@ source ./table.sh
 connected=1
 # flag to check if the application should exit
 exit=0
+# variable to store the connected database name
+connectedDB=""
 
 # Main function that runs the application
 PS3="Please select an option: "
@@ -34,6 +36,7 @@ while [[ exit -ne 1 ]]; do
                     read -p "Enter the database name: " dbName
                     connectToDatabase $dbName
                     connected=$?
+                    connectedDB=$dbName
                     break
                     ;;
                 "Drop a database")
@@ -54,7 +57,7 @@ while [[ exit -ne 1 ]]; do
             case $option in
                 "Create Table")
                     read -p "Enter the table name: " tableName
-                    createTable $tableName
+                    createTable $tableName $connectedDB
                     ;;
                 "List Tables")
                     listTables

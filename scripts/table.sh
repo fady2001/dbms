@@ -9,6 +9,7 @@
 
 # Load the helper functions
 source ./helper.sh
+source ./metadata.sh
 
 # function that create a new Table
 function createTable() {
@@ -50,6 +51,7 @@ function createTable() {
 
     # create the Table
     touch $1
+    addTableToMetadata $1 $2
     echo "Table created successfully"
     
 }
@@ -100,21 +102,21 @@ function dropTable() {
 }
 
 # function that insert into a Table
-function insertIntoTable() {
+# function insertIntoTable() {
     
-}
+# }
 
-# function that select from a Table
-function selectFromTable() {
+# # function that select from a Table
+# function selectFromTable() {
     
-}
+# }
 
-# function that delete from a Table
-function deleteFromTable() {
+# # function that delete from a Table
+# function deleteFromTable() {
     
-}
+# }
 
-# function that update a Table
-function updateTable() {
+# # function that update a Table
+# function updateTable() {
     
-}
+# }

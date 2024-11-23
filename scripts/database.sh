@@ -8,6 +8,7 @@
 
 # Load the helper functions
 source ./helper.sh
+source ./metadata.sh
 
 # function that create a new database
 function createDatabase() {
@@ -49,12 +50,14 @@ function createDatabase() {
 
     # create the database
     mkdir $1
+    # create metadata file for the database
+    createMetadataFile $1
     echo "Database created successfully"
 }
 
 # function that list all the databases
 function listDatabases() {
-    
+
     # check if we have read permission in the current directory
     if [[ $(hasReadPermission) -eq 0 ]]; then
         echo "No read permission in the current directory"
