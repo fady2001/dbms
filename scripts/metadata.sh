@@ -9,9 +9,8 @@
 #####################################################################################################
 
 # Each record in the metadata file represents a table in the database and has the following format:
-# Table name : column1 name - column1 data type - column1 size - column1 not null : column2 name - column2 data type - column2 size - column2 nullable : ...
-# The first column is always the table's primary key.
-# e.g., users : id - int - 4 - true : name - varchar - 20 - false : email - varchar - 50 - true
+# Table name : column1 name - column1 data type - column1 size - isPK isNull isUnique : column2 name - column2 data type - column2 size - isPK isNull isUnique : ...
+# e.g., users : id - int - 4 - yyy : name - varchar - 20 - false : email - varchar - 50 - nyy
 
 # Function that creates a new metadata file for the database
 function createMetadataFile() {
@@ -40,15 +39,17 @@ function addTableToMetadata() {
 
     # Initialize an empty string to store column definitions
     tableMetadata=""
+    # flag to check if the primary key is already set
+    isPrimaryKeySet=0
 
     # Loop to read column details for each column in a single line
     for ((i = 1; i <= $columnCount; i++)); do
-        echo "Enter details for column $i in the format: name type size isNullable (e.g., id int 4 true)"
+        echo "Enter details for column $i in the format: name type size isPK isNull isUnique (e.g., id int 4 yyy)"
         read -p "Column $i details: " columnDetails
 
         # Split the input by space into an array
         IFS=' ' 
-        read -r columnName columnType columnSize columnNotNull <<< "$columnDetails"
+        read -r columnName columnType columnSize columnConstraints <<< "$columnDetails"
 
         # validate the column name
         if [[ $(isAlphaNumeric $columnName) -eq 0 ]]; then
@@ -72,15 +73,25 @@ function addTableToMetadata() {
             continue
         fi
 
-        # validate the column not null value
-        if [[ $columnNotNull != "true" && $columnNotNull != "false" ]]; then
-            echo "Column not null value should be either true or false"
+        # validate the column constraints to be any combination of y or n limited to 3 characters
+        if [[ ! $columnConstraints =~ ^[yn]{3}$ ]]; then
+            echo "Column constraints should be any combination of y or n limited to 3 characters"
             ((i--))
             continue
         fi
 
+        # check if the primary key is already set
+        if [[ ${columnConstraints:0:1} == 'y' && $isPrimaryKeySet -eq 1 ]]; then
+            echo "Primary key is already set"
+            ((i--))
+            continue
+        else
+            isPrimaryKeySet=1
+        fi
+
         # Construct the column metadata in the required format
-        tableMetadata+="$columnName - $columnType - $columnSize - $columnNotNull : "
+        # append the column metadata to the table metadata in a new line
+        tableMetadata+="$columnName - $columnType - $columnSize - $columnConstraints : "
     done
 
     # Remove the trailing ' : ' from the last column
