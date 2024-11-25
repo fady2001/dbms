@@ -51,7 +51,7 @@ function createTable() {
 
     # create the Table
     touch $1
-    addTableToMetadata $1 $2
+    addTableToMetadata $2 $1
     echo "Table created successfully"
     
 }
@@ -102,9 +102,13 @@ function dropTable() {
 }
 
 # function that insert into a Table
-# function insertIntoTable() {
-    
-# }
+function insertIntoTable() {
+    # check if the table is exists
+    if [[ $(fileExists $1) -eq 0 ]]; then
+        echo "Table does not exist"
+        return
+    fi
+}
 
 # # function that select from a Table
 # function selectFromTable() {

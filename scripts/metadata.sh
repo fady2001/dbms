@@ -21,10 +21,12 @@ function createMetadataFile() {
 }
 
 # Function that adds a new table to the metadata file
+# $1: database name
+# $2: table name
 function addTableToMetadata() {
     # Check if the metadata file exists
-    if [[ ! -f ".$2" ]]; then
-        echo "Metadata file for database $2 does not exist"
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
         return
     fi
 
@@ -91,14 +93,47 @@ function addTableToMetadata() {
 
         # Construct the column metadata in the required format
         # append the column metadata to the table metadata in a new line
-        tableMetadata+="$columnName - $columnType - $columnSize - $columnConstraints : "
+        tableMetadata+="$columnName:$columnType:$columnSize:$columnConstraints:"
     done
 
     # Remove the trailing ' : ' from the last column
     tableMetadata="${tableMetadata% : }"
 
     # Append the table metadata to the metadata file
-    echo "$1 : $tableMetadata" >> ".$2"
-    echo "Table $1 added to metadata."
+    echo "$2 : $tableMetadata" >> ".$1"
+    echo "Table $2 added to metadata."
 }
 
+# function that take the database name and table name and column name and return the column index
+# $1: database name
+# $2: table name
+# $3: column name
+# return: if column name exists return the index of the column, otherwise return -1
+function getColumnIndex() {
+    # Check if the metadata file exists
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
+        return
+    fi
+    # Variable for column index (initialized to -1, in case we don't find it)
+    column_index=-1
+
+    # Use awk to search for the column name
+    column_index=$(awk -v column_name="$3" '
+    BEGIN {FS=":"}
+    {
+        for (i = 2; i <= NF; i+=4) {
+            if ($i == column_name) {
+                print i
+                exit
+            }
+        }
+    }
+    ' ".$1")
+
+    if [[ -z "$column_index" ]]; then
+        column_index=-1
+    fi
+
+    echo "$column_index"
+}
