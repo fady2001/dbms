@@ -143,3 +143,19 @@ function hasExecutePermission() {
         fi
     fi
 }
+
+
+# helper function that takes the table path and the column name and checks if the column contains duplicates or not
+# $1: table path
+# $2: column index
+# returns 1 if the column contains duplicates, 0 otherwise
+function checkDublicates (){
+    echo $(awk -v col="$2" 'BEGIN { FS=":"; flag =0;} { if ($col in seen) {
+            print 1
+            flag=1
+            exit
+
+            } else {
+                seen[$col] = 1;
+            }} END { if (!flag)print 0}' "$1")
+}
