@@ -252,7 +252,7 @@ function valueExists () {
 # helper function that takes a input and checks if it is contains only digits or not
 # returns 1 if it contains only digits, 0 otherwise
 function isNumber() {
-    if [[ $1 =~ ^[0-9]+$ ]]; then
+    if [[ $1 =~ ^-?[0-9]+$ ]]; then
         echo 1
     else
         echo 0
