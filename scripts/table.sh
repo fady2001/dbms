@@ -7,6 +7,9 @@
 #
 ################################################################################
 
+export CURRENT_DB_PATH="$PWD/iti"
+export CURRENT_DB_NAME="iti"
+
 # Load the helper functions
 source ./helper.sh
 source ./metadata.sh
@@ -118,70 +121,108 @@ function insertIntoTable() {
     for column in $columns; do
         read -p "Enter $column: " value
 
-        # get column index
-        index=$(getColumnIndex $1 $column)
-
-        # first check: if the column is primary key then it mustn't be empty and must be unique (not exist in the table)
-        if [[ $(getPrimaryKey $1) -eq $column ]]; then
-            # check if the value is empty
-            if [[ -z $value ]]; then
-                print "Primary key must not null" "white" "red"
-                return
-            fi
-            # check if the value exists in the table
-            # index will be (index/4)+1 to map between index in metadata and index in the actual table
-            if [[ $(valueExists $1 $((index/4+1)) $value) -eq 1 ]]; then
-                print "Primary key must be unique" "white" "red"
-                return
-            fi
-        fi
-
-        # second check: if the column is not null then it mustn't be empty
-        if [[ $(getColumnNullConstraint $1 $column) -eq 1 ]]; then
-            # check if the value is empty
-            if [[ -z $value ]]; then
-                print "$column must not be null" "white" "red"
-                return
-            fi
-        fi
-
-        # third check: if the column is unique then it must be unique (not exist in the table)
-        if [[ $(getColumnUniqueConstraint $1 $column) -eq 1 ]]; then
-            # check if the value exists in the table
-            if [[ $(valueExists $1 $index $value) -eq 1 ]]; then
-                print "$column must be unique" "white" "red"
-                return
-            fi
-        fi
-
-        # fourth check: check data type
-        echo $(getColumnType $1 $column)
-        if [[ $(getColumnType $1 $column) == "int" ]]; then
-            if [[ $(isNumber $value) -eq 0 ]]; then
-                print "$column must be an integer" "white" "red"
-                return
-            fi
-        elif [[ $(getColumnType $1 $column) == "varchar" ]]; then
-            if [[ $(containsColon $value) -eq 1 ]]; then
-                print "$column must not contain :" "white" "red"
-                return
-            fi
-        fi
-
-        # fifth check: check data length
-        if [[ $(getColumnSize $1 $column) -lt ${#value} ]]; then
-            print "$column must not exceed $(getColumnSize $1 $column) characters" "white" "red"
+        # check if the value follows the constraints
+        if [[ $(followConstraints $1 $column $value) -eq 0 ]]; then
             return
+        else
+            # insert the value into the record
+            record="$record$value:"
         fi
 
-        # insert the value into the record
-        record="$record$value:"
     done
     # remove trialing :
     record=${record%?}
     # insert the record into the table
     echo $record >> $1
 }
+
+# function that update a Table
+# $1: table name
+function updateTable() {
+    # check if table exists
+    if [[ $(fileExists $1) -eq 0 ]]; then
+        print "Table does not exist" "white" "red"
+        return
+    fi
+
+    declare -a columns
+    declare -a values
+
+    # get column names that user wants to update separated by comma
+    IFS=','
+    read -p "Enter the columns you want to update separated by comma: " -a columns
+    # get values for the columns separated by comma
+    IFS=','
+    read -p "Enter the values you want to update separated by comma: " -a values
+    # get conditions
+    read -p "Enter the conditions separated by comma: " conditions
+
+    # declare hard coded values for testing
+    # columns=("id")
+    # values=(23)
+    # conditions="id=3"
+
+    echo ${columns[@]}
+    echo ${values[@]}
+
+    # get column indecies in table file
+    declare -a indecies
+    for column in ${columns[@]}; do
+        # trim leading and trailing whitespaces
+        column=$(echo $column | tr -d ' ')
+        # get column index
+        index=$(getColumnIndex $1 $column)
+        # check if the column exists
+        if [[ $index -eq -1 ]]; then
+            print "Column $column does not exist in the table" "white" "red"
+            return
+        else
+            # actual index in the table file equals (index/4)+1
+            indecies+=($((index/4+1)))
+        fi
+    done
+
+    # check if values length is larger than columns length
+    if [[ ${#values[@]} -ne ${#columns[@]} ]]; then
+        print "Number of values is not equal to number of columns" "white" "red"
+        return
+    fi
+
+    for i in ${!columns[@]}; do
+        # check if the value follows the constraints
+        if [[ $(followConstraints $1 ${columns[$i]} ${values[$i]}) -eq 0 ]]; then
+            return
+        fi
+    done
+
+    # loop over the table file
+    while IFS= read -r line; do
+        if [[ $(evaluateConditions $1 $line $conditions) -eq 1 ]]; then
+            # split the line by delimiter
+            IFS=':' read -r -a fields <<< $line
+            for i in ${indecies[@]}; do
+                fields[$i-1]=${values[$i-1]}
+            done
+            # update the line
+            new_line=""
+            for field in ${fields[@]}; do
+                new_line="$new_line$field:"
+            done
+            # remove trialing :
+            new_line=${new_line%?}
+            # update the line in the table file
+            sed -i "s/$line/$new_line/" $1
+        elif [[ $(evaluateConditions $1 $line $conditions) -eq -1 ]]; then
+            print "Invalid operator" "white" "red"
+            return
+        fi
+    done < $1
+    print "Table updated successfully" "white" "green"
+}
+
+# updateTable "emp"
+
+# updateTable "emp"
 
 # function that select from a Table
 # function selectFromTable() {
@@ -190,10 +231,5 @@ function insertIntoTable() {
 
 # # function that delete from a Table
 # function deleteFromTable() {
-    
-# }
-
-# # function that update a Table
-# function updateTable() {
     
 # }

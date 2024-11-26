@@ -361,3 +361,74 @@ function getColumnNames() {
     # Print the array elements
     echo "${column_names[@]}"
 }
+
+
+# function takes the table name and the column name and the value and make sure that value can be inserted or set in the column
+# $1: table name
+# $2: column name
+# $3: value
+# returns 0 if the value can't be inserted, 1 otherwise
+function followConstraints() {
+    # get column index in metadata
+        index=$(getColumnIndex $1 $2)
+        # first check: if the column is primary key then it mustn't be empty and must be unique (not exist in the table)
+        if [[ $(getPrimaryKey $1) == $2 ]]; then
+            # check if the value is empty
+            if [[ -z $3 || $3 == "" || $3 == "null" ]]; then
+                print "Primary key must not null" "white" "red"
+                echo 0
+                return
+            fi
+            # check if the value exists in the table
+            # index will be (index/4)+1 to map between index in metadata and index in the actual table
+            if [[ $(valueExists $1 $((index/4+1)) $3) -eq 1 ]]; then
+                print "Primary key must be unique" "white" "red"
+                echo 0
+                return
+            fi
+        fi
+
+        # second check: if the column is not null then it mustn't be empty
+        if [[ $(getColumnNullConstraint $1 $2) -eq 1 ]]; then
+            # check if the value is empty or "" or equal to null
+            if [[ -z $3 || $3 == "" || $3 == "null" ]]; then
+                print "$2 must not be null" "white" "red"
+                echo 0
+                return 
+            fi
+        fi
+
+        # third check: if the column is unique then it must be unique (not exist in the table)
+        if [[ $(getColumnUniqueConstraint $1 $2) -eq 1 ]]; then
+            # check if the value exists in the table
+            if [[ $(valueExists $1 $index $3) -eq 1 ]]; then
+                print "$2 must be unique" "white" "red"
+                echo 0
+                return
+            fi
+        fi
+
+        # fourth check: check data type
+        if [[ $(getColumnType $1 $2) == "int" ]]; then
+            if [[ $(isNumber $3) -eq 0 ]]; then
+                print "$2 must be an integer" "white" "red"
+                echo 0
+                return
+            fi
+        elif [[ $(getColumnType $1 $2) == "varchar" ]]; then
+            if [[ $(containsColon $3) -eq 1 ]]; then
+                print "$2 must not contain :" "white" "red"
+                echo 0
+                return
+            fi
+        fi
+
+        # fifth check: check data length
+        if [[ $(getColumnSize $1 $2) -lt ${#3} ]]; then
+            print "$2 must not exceed $(getColumnSize $1 $2) characters" "white" "red"
+            echo 0
+            return
+        fi
+
+        echo 1
+}

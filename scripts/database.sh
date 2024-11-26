@@ -99,7 +99,7 @@ function dropDatabase() {
     if [[ $(hasWritePermission) -eq 0 ]]; then
         print "No write permission in the current directory" "white" "red"
         return
-    fi    
+    fi
 
     # check if the database already exists
     if [[ $(dirExists $1) -eq 1 ]]; then
@@ -108,5 +108,5 @@ function dropDatabase() {
     else 
         print "Database does not exist" "white" "red"
         return
-    fi 
+    fi
 }
