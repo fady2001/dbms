@@ -14,37 +14,37 @@ source ./metadata.sh
 function createDatabase() {
     # check if the database name is alphanumeric
     if [[ $(isAlphaNumeric $1) -eq 0 ]]; then
-        echo "Database name should be alphanumeric"
+        print "Database name should be alphanumeric" "white" "red"
         return
     fi
 
     # check if the database already exists
     if [[ $(dirExists $1) -eq 1 ]]; then
-        echo "Database already exists"
+        print "Database already exists" "white" "red"
         return
     fi
 
     # check if the database name is too long
     if [[ $(isNameTooLong $1) -eq 1 ]]; then
-        echo "Database name is too long"
+        print "Database name is too long" "white" "red"
         return
     fi
 
     # check if the path is too long
     if [[ $(isPathTooLong $1) -eq 1 ]]; then
-        echo "Path is too long"
+        print "Path is too long" "white" "red"
         return
     fi
 
     # check if we have write permission in the current directory
     if [[ $(hasWritePermission) -eq 0 ]]; then
-        echo "No write permission in the current directory"
+        print "No write permission in the current directory" "white" "red"
         return
     fi
 
     # check if we have execute permission in the current directory
     if [[ $(hasExecutePermission) -eq 0 ]]; then
-        echo "No execute permission in the current directory"
+        print "No execute permission in the current directory" "white" "red"
         return
     fi
 
@@ -52,7 +52,7 @@ function createDatabase() {
     mkdir $1
     # create metadata file for the database
     createMetadataFile $1
-    echo "Database created successfully"
+    print "Database created successfully" "white" "green"
 }
 
 # function that list all the databases
@@ -60,10 +60,10 @@ function listDatabases() {
 
     # check if we have read permission in the current directory
     if [[ $(hasReadPermission) -eq 0 ]]; then
-        echo "No read permission in the current directory"
+        print "No read permission in the current directory" "white" "red"
         return
     fi
-    echo "Listing Databases"
+    print "Listing Databases" "white" "green"
     ls -d */ | nl | sed 's|/||'
 }
 
@@ -72,23 +72,23 @@ function connectToDatabase() {
     
     # check if we have read permission in the current directory
     if [[ $(hasReadPermission) -eq 0 ]]; then
-        echo "No read permission in the current directory"
+        print "No read permission in the current directory" "white" "red"
         return 1
     fi
 
     # check if we have execute permission in the current directory
     if [[ $(hasExecutePermission) -eq 0 ]]; then
-        echo "No execute permission in the current directory"
+        print "No execute permission in the current directory" "white" "red"
         return 1
     fi
 
     # check if the database exists    
     if [[ $(dirExists $1) -eq 1 ]]; then
         cd $1
-        echo "Connected to $1"
+        print "Connected to $1" "white" "green"
         return 0
     else
-        echo "Database does not exist"
+        print "Database does not exist" "white" "red"
         return 1
     fi
 }
@@ -97,16 +97,16 @@ function connectToDatabase() {
 function dropDatabase() {
     # check if we have write permission in the current directory
     if [[ $(hasWritePermission) -eq 0 ]]; then
-        echo "No write permission in the current directory"
+        print "No write permission in the current directory" "white" "red"
         return
     fi    
 
     # check if the database already exists
     if [[ $(dirExists $1) -eq 1 ]]; then
         rm -r -i $1
-        echo "Database dropped successfully"
-    else
-        echo "Database does not exist"
+        print "Database dropped successfully" "white" "green"
+    else 
+        print "Database does not exist" "white" "red"
         return
     fi 
 }

@@ -96,11 +96,11 @@ function addTableToMetadata() {
         tableMetadata+="$columnName:$columnType:$columnSize:$columnConstraints:"
     done
 
-    # Remove the trailing ' : ' from the last column
-    tableMetadata="${tableMetadata% : }"
+    # Remove the trailing ':' from the last column
+    tableMetadata=${tableMetadata%?}
 
     # Append the table metadata to the metadata file
-    echo "$2 : $tableMetadata" >> ".$1"
+    echo "$2:$tableMetadata" >> ".$1"
     echo "Table $2 added to metadata."
 }
 
@@ -119,13 +119,15 @@ function getColumnIndex() {
     column_index=-1
 
     # Use awk to search for the column name
-    column_index=$(awk -v column_name="$3" '
+    column_index=$(awk -v table_name="$2" -v column_name="$3" '
     BEGIN {FS=":"}
     {
-        for (i = 2; i <= NF; i+=4) {
-            if ($i == column_name) {
-                print i
-                exit
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == column_name) {
+                    print i
+                    exit
+                }
             }
         }
     }
@@ -136,4 +138,233 @@ function getColumnIndex() {
     fi
 
     echo "$column_index"
+}
+
+# function that take the database name and table name and column name and return the column type
+# $1: database name
+# $2: table name
+# $3: column name
+# return: if column name exists return the type of the column, otherwise return -1
+function getColumnType() {
+    # Check if the metadata file exists
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
+        return
+    fi
+    # Variable for column type (initialized to -1, in case we don't find it)
+    column_type=-1
+
+    # Use awk to search for the column name
+    column_type=$(awk -v  table_name="$2" -v column_name="$3" '
+    BEGIN {FS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == column_name) {
+                    print $(i+1)
+                    exit
+                }
+            }
+        }
+    }
+    ' ".$1")
+
+    if [[ -z "$column_type" ]]; then
+        column_type=-1
+    fi
+
+    echo "$column_type"
+}
+
+
+# function that take the database name and table name and return the column size
+# $1: database name
+# $2: table name
+# $3: column name
+# return: if column name exists return the size of the column, otherwise return -1
+function getColumnSize() {
+    # Check if the metadata file exists
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
+        return
+    fi
+    # Variable for column size (initialized to -1, in case we don't find it)
+    column_size=-1
+
+    # Use awk to search for the column name
+    column_size=$(awk -v  table_name="$2" -v column_name="$3" '
+    BEGIN {FS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == column_name) {
+                    print $(i+2)
+                    exit
+                }
+            }
+        }
+    }
+    ' ".$1")
+
+    if [[ -z "$column_size" ]]; then
+        column_size=-1
+    fi
+
+    echo "$column_size"
+}
+
+# function that take the database name and table name and return the primary key column name
+# $1: database name
+# $2: table name
+# return: if primary key exists return the primary key column name, otherwise return -1
+function getPrimaryKey() {
+    # Check if the metadata file exists
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
+        return
+    fi
+    # Variable for primary key (initialized to -1, in case we don't find it)
+    primary_key=-1
+
+    # Use awk to search for the primary key
+    primary_key=$(awk -v  table_name="$2" '
+    BEGIN {FS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 5; i <= NF; i+=4) {
+                if (substr($i, 1, 1) == "y") {
+                    print $(i-3)
+                    exit
+                }
+            }
+        }
+    }
+    ' ".$1")
+
+    if [[ -z "$primary_key" ]]; then
+        primary_key=-1
+    fi
+
+    echo "$primary_key"
+}
+
+# function that take the database name and table name and column name and return the column null constraint
+# $1: database name
+# $2: table name
+# $3: column name
+# return: if column name exists return the null constraint of the column, otherwise return -1
+function getColumnNullConstraint() {
+    # Check if the metadata file exists
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
+        return
+    fi
+    # Variable for column null constraint (initialized to -1, in case we don't find it)
+    column_null_constraint=-1
+
+    # Use awk to search for the column name
+    column_null_constraint=$(awk -v  table_name="$2" -v column_name="$3" '
+    BEGIN {FS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 5; i <= NF; i+=4) {
+                if ($(i-3) == column_name) {
+                    if (substr($i, 2, 1) == "y") {
+                        print "true"
+                        exit
+                    } else {
+                        print "false"
+                        exit
+                    }
+                }
+            }
+        }
+    }
+    ' ".$1")
+
+    if [[ -z "$column_null_constraint" ]]; then
+        column_null_constraint=-1
+    fi
+
+    echo "$column_null_constraint"
+}
+
+# function that take the database name and table name and column name and return the column unique constraint
+# $1: database name
+# $2: table name
+# $3: column name
+# return: if column name exists return the unique constraint of the column, otherwise return -1
+function getColumnUniqueConstraint() {
+    # Check if the metadata file exists
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
+        return
+    fi
+    # Variable for column unique constraint (initialized to -1, in case we don't find it)
+    column_unique_constraint=-1
+
+    # Use awk to search for the column name
+    column_unique_constraint=$(awk -v  table_name="$2" -v column_name="$3" '
+    BEGIN {FS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 5; i <= NF; i+=4) {
+                if ($(i-3) == column_name) {
+                    if (substr($i, 3, 1) == "y") {
+                        print "true"
+                        exit
+                    } else {
+                        print "false"
+                        exit
+                    }
+                }
+            }
+        }
+    }
+    ' ".$1")
+
+    if [[ -z "$column_unique_constraint" ]]; then
+        column_unique_constraint=-1
+    fi
+
+    echo "$column_unique_constraint"
+}
+
+
+# helper function that takes the database name and table name and return column names in the table
+# $1: database name
+# $2: table name
+# return: if table exists return the column names as an array, otherwise return -1
+function getColumnNames() {
+    # Check if the metadata file exists
+    if [[ ! -f ".$1" ]]; then
+        echo "Metadata file for database $1 does not exist"
+        return
+    fi
+
+    # Initialize an empty array for column names
+    column_names=()
+
+    # Use awk to search for the table name and extract column names
+    column_names_str=$(awk -v table_name="$2" '
+    BEGIN {FS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                printf "%s ", $i
+            }
+        }
+    }
+    ' ".$1")
+
+    # Convert the space-separated string to an array
+    IFS=' ' read -r -a column_names <<< "$column_names_str"
+
+    # Check if the array is empty and set to -1 if no columns were found
+    if [[ ${#column_names[@]} -eq 0 ]]; then
+        column_names=(-1)
+    fi
+
+    # Print the array elements
+    echo "${column_names[@]}"
 }

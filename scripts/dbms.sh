@@ -47,7 +47,7 @@ while [[ exit -ne 1 ]]; do
                     exit=1
                     break
                     ;;
-                *) echo "invalid option $REPLY";;
+                *) print "invalid option $REPLY" "white" "red";;
             esac
         done
 
@@ -68,7 +68,7 @@ while [[ exit -ne 1 ]]; do
                     ;;
                 "Insert into Table")
                     read -p "Enter the table name: " tableName
-                    insertIntoTable $tableName
+                    insertIntoTable $tableName $connectedDB
                     ;;
                 "Select From Table")
                     read -p "Enter the table name: " tableName
@@ -86,7 +86,7 @@ while [[ exit -ne 1 ]]; do
                     connected=1
                     break
                     ;;
-                *) echo "invalid option $REPLY";;
+                *) print "invalid option $REPLY" "white" "red";;
             esac
         done
     fi

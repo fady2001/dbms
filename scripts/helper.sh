@@ -6,6 +6,64 @@
 #
 ################################################################################
 
+# helper function that takes 3 arguments: text, foreground color, background color and prints the text with the specified colors
+# $1: text
+# $2: foreground color
+# $3: background color
+function print() {
+    # Define color codes for foreground (text) colors
+    RED='\033[31m'
+    GREEN='\033[32m'
+    YELLOW='\033[33m'
+    BLUE='\033[34m'
+    MAGENTA='\033[35m'
+    CYAN='\033[36m'
+    WHITE='\033[37m'
+
+    # Define background color codes
+    BG_RED='\033[41m'
+    BG_GREEN='\033[42m'
+    BG_YELLOW='\033[43m'
+    BG_BLUE='\033[44m'
+    BG_MAGENTA='\033[45m'
+    BG_CYAN='\033[46m'
+    BG_WHITE='\033[47m'
+
+    # Reset code
+    RESET='\033[0m'
+
+    # Default color settings
+    fg_color=$RESET
+    bg_color=$RESET
+
+    # Set foreground color based on input
+    case "$2" in
+        "red") fg_color=$RED ;;
+        "green") fg_color=$GREEN ;;
+        "yellow") fg_color=$YELLOW ;;
+        "blue") fg_color=$BLUE ;;
+        "magenta") fg_color=$MAGENTA ;;
+        "cyan") fg_color=$CYAN ;;
+        "white") fg_color=$WHITE ;;
+        *) fg_color=$RESET ;;  # Default to no color if not recognized
+    esac
+
+    # Set background color based on input
+    case "$3" in
+        "red") bg_color=$BG_RED ;;
+        "green") bg_color=$BG_GREEN ;;
+        "yellow") bg_color=$BG_YELLOW ;;
+        "blue") bg_color=$BG_BLUE ;;
+        "magenta") bg_color=$BG_MAGENTA ;;
+        "cyan") bg_color=$BG_CYAN ;;
+        "white") bg_color=$BG_WHITE ;;
+        *) bg_color=$RESET ;;  # Default to no background if not recognized
+    esac
+
+    # Print the text with the specified foreground and background colors
+    echo -e "${fg_color}${bg_color}$1${RESET}"
+}
+
 # helper function that takes a string and check if it is alphanumeric or not
 # returns 1 if it is alphanumeric, 0 otherwise
 function isAlphaNumeric() {
@@ -149,7 +207,7 @@ function hasExecutePermission() {
 # $1: table path
 # $2: column index
 # returns 1 if the column contains duplicates, 0 otherwise
-function checkDublicates (){
+function containsDublicates (){
     echo $(awk -v col="$2" 'BEGIN { FS=":"; flag =0;} { if ($col in seen) {
             print 1
             flag=1
@@ -158,4 +216,55 @@ function checkDublicates (){
             } else {
                 seen[$col] = 1;
             }} END { if (!flag)print 0}' "$1")
+}
+
+# helper function that takes the table path and the column name and checks if the column contains nulls or not
+# $1: table path
+# $2: column index
+# returns 1 if the column contains nulls, 0 otherwise
+function containsNulls () {
+    echo $(awk -v col="$2" 'BEGIN { FS=":";  flag =0;} { if ($col == "" ) {
+		print 1
+		flag=1
+		exit
+
+        } else {
+            flag = 0
+        }} END { if (!flag) print 0}' "$1")
+}
+
+# helper function that takes the table path and the column index and value and checks if value exists in the column or not
+# $1: table path
+# $2: column index
+# $3: value
+# returns 1 if the value exists in the column, 0 otherwise
+function valueExists () {
+    echo $(awk -v col="$2" -v val="$3" 'BEGIN { FS=":"; flag =0;} { if ($col == val) {
+            print 1
+            flag=1
+            exit
+
+            } else {
+                flag = 0
+            }} END { if (!flag) print 0}' "$1")
+}
+
+# helper function that takes a input and checks if it is contains only digits or not
+# returns 1 if it contains only digits, 0 otherwise
+function isNumber() {
+    if [[ $1 =~ ^[0-9]+$ ]]; then
+        echo 1
+    else
+        echo 0
+    fi
+}
+
+# helper function that takes a input and checks if it is contains any character except ':'
+# returns 1 if it contains only alphabets, 0 otherwise
+function containsColon() {
+    if [[ $1 =~ : ]]; then
+        echo 1
+    else
+        echo 0
+    fi
 }
