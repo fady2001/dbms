@@ -220,10 +220,6 @@ function updateTable() {
     print "Table updated successfully" "white" "green"
 }
 
-# updateTable "emp"
-
-# updateTable "emp"
-
 # function that select from a Table
 # function selectFromTable() {
     
