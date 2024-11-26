@@ -13,7 +13,6 @@ source ./metadata.sh
 
 # function that create a new Table
 # $1: table name
-# $2: database name
 function createTable() {
     # check if the Table name is alphanumeric
     if [[ $(isAlphaNumeric $1) -eq 0 ]]; then
@@ -53,7 +52,7 @@ function createTable() {
 
     # create the Table
     touch $1
-    addTableToMetadata $2 $1
+    addTableToMetadata $1
     print "Table created successfully" "white" "green"
     
 }
@@ -106,7 +105,6 @@ function dropTable() {
 
 # function that insert into a Table
 # $1: table name
-# $2: database name
 function insertIntoTable() {
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
@@ -115,16 +113,16 @@ function insertIntoTable() {
     fi
 
     # get column names
-    columns=$(getColumnNames $2 $1)
+    columns=$(getColumnNames $1)
     record=""
     for column in $columns; do
-        value=1
+        read -p "Enter $column: " value
 
         # get column index
-        index=$(getColumnIndex $2 $1 $column)
+        index=$(getColumnIndex $1 $column)
 
         # first check: if the column is primary key then it mustn't be empty and must be unique (not exist in the table)
-        if [[ $(getPrimaryKey $2 $1) -eq $column ]]; then
+        if [[ $(getPrimaryKey $1) -eq $column ]]; then
             # check if the value is empty
             if [[ -z $value ]]; then
                 print "Primary key must not null" "white" "red"
@@ -132,14 +130,14 @@ function insertIntoTable() {
             fi
             # check if the value exists in the table
             # index will be (index/4)+1 to map between index in metadata and index in the actual table
-            if [[ $(valueExists $2 $1 $((index/4+1)) $value) -eq 1 ]]; then
+            if [[ $(valueExists $1 $((index/4+1)) $value) -eq 1 ]]; then
                 print "Primary key must be unique" "white" "red"
                 return
             fi
         fi
 
         # second check: if the column is not null then it mustn't be empty
-        if [[ $(getColumnNullConstraint $2 $1 $column) -eq 1 ]]; then
+        if [[ $(getColumnNullConstraint $1 $column) -eq 1 ]]; then
             # check if the value is empty
             if [[ -z $value ]]; then
                 print "$column must not be null" "white" "red"
@@ -148,12 +146,32 @@ function insertIntoTable() {
         fi
 
         # third check: if the column is unique then it must be unique (not exist in the table)
-        if [[ $(getColumnUniqueConstraint $2 $1 $column) -eq 1 ]]; then
+        if [[ $(getColumnUniqueConstraint $1 $column) -eq 1 ]]; then
             # check if the value exists in the table
-            if [[ $(valueExists $2 $1 $index $value) -eq 1 ]]; then
+            if [[ $(valueExists $1 $index $value) -eq 1 ]]; then
                 print "$column must be unique" "white" "red"
                 return
             fi
+        fi
+
+        # fourth check: check data type
+        echo $(getColumnType $1 $column)
+        if [[ $(getColumnType $1 $column) == "int" ]]; then
+            if [[ $(isNumber $value) -eq 0 ]]; then
+                print "$column must be an integer" "white" "red"
+                return
+            fi
+        elif [[ $(getColumnType $1 $column) == "varchar" ]]; then
+            if [[ $(containsColon $value) -eq 1 ]]; then
+                print "$column must not contain :" "white" "red"
+                return
+            fi
+        fi
+
+        # fifth check: check data length
+        if [[ $(getColumnSize $1 $column) -lt ${#value} ]]; then
+            print "$column must not exceed $(getColumnSize $1 $column) characters" "white" "red"
+            return
         fi
 
         # insert the value into the record
@@ -164,12 +182,11 @@ function insertIntoTable() {
     # insert the record into the table
     echo $record >> $1
 }
-insertIntoTable emp iti
 
 # function that select from a Table
-function selectFromTable() {
+# function selectFromTable() {
     
-}
+# }
 
 # # function that delete from a Table
 # function deleteFromTable() {

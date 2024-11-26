@@ -15,8 +15,10 @@ source ./table.sh
 connected=1
 # flag to check if the application should exit
 exit=0
-# variable to store the connected database name
-connectedDB=""
+
+# create an environment variable to store the path of the current database
+export CURRENT_DB_PATH=""
+export CURRENT_DB_NAME=""
 
 # Main function that runs the application
 PS3="Please select an option: "
@@ -36,7 +38,8 @@ while [[ exit -ne 1 ]]; do
                     read -p "Enter the database name: " dbName
                     connectToDatabase $dbName
                     connected=$?
-                    connectedDB=$dbName
+                    CURRENT_DB_NAME=$dbName
+                    CURRENT_DB_PATH=$PWD
                     break
                     ;;
                 "Drop a database")
@@ -57,7 +60,7 @@ while [[ exit -ne 1 ]]; do
             case $option in
                 "Create Table")
                     read -p "Enter the table name: " tableName
-                    createTable $tableName $connectedDB
+                    createTable $tableName
                     ;;
                 "List Tables")
                     listTables
@@ -68,7 +71,7 @@ while [[ exit -ne 1 ]]; do
                     ;;
                 "Insert into Table")
                     read -p "Enter the table name: " tableName
-                    insertIntoTable $tableName $connectedDB
+                    insertIntoTable $tableName
                     ;;
                 "Select From Table")
                     read -p "Enter the table name: " tableName
