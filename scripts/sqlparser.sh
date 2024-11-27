@@ -84,6 +84,8 @@ function parseQuery() {
         echo "Column Names: ${columnNames[@]}"
         echo "Data Types: ${dataTypes[@]}"
         echo "Constraints: ${constraints[@]}"
+    elif [[ $1 =~ ^[[:space:]]*[cC][lL][eE][aA][rR] ]]; then
+        clear
     else
         print "Invalid query" "white" "red"
         return

@@ -65,9 +65,8 @@ function listDatabases() {
     fi
 
     # check if there are no databases
-    if [[ $(find . -maxdepth 1 -type d ! -name . | wc -l) -eq 0 ]]; then
+    if [[ $(find . -maxdepth 1 -type d ! -name '.' ! -name '.vscode' | wc -l) -eq 0 ]]; then
         print "No databases found" "white" "red"
-        return
     else
         print "Listing Databases" "white" "green"
         ls -d */ | nl | sed 's|/||'
