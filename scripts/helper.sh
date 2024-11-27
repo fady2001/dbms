@@ -19,6 +19,7 @@ function print() {
     MAGENTA='\033[35m'
     CYAN='\033[36m'
     WHITE='\033[37m'
+    BLACK='\033[30m'
 
     # Define background color codes
     BG_RED='\033[41m'

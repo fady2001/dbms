@@ -17,7 +17,7 @@ function createMetadataFile() {
     # there are no checks needed as they are already checked in the database.sh script
     # Create the hidden metadata file inside the database directory
     touch "$1/.$1"
-    echo "Metadata file created for database $1"
+    print "Metadata file created for database $1" "white" "green"
 }
 
 # Function that adds a new table to the metadata file
@@ -25,7 +25,7 @@ function createMetadataFile() {
 function addTableToMetadata() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        echo "Metadata file for database $CURRENT_DB_NAME does not exist"
+        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
 

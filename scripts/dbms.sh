@@ -47,11 +47,20 @@ while [[ exit -ne 1 ]]; do
                     dropDatabase $dbName
                     ;;
                 "Exit")
+                    print "Are you sure you want to exit? (y/n)" "black" "yellow"
+                    read -n 1 -r -s -p "" REPLY
+                    if [[ $REPLY =~ ^[Yy]$ ]]; then
+                        print "Goodbye!" "black" "green"
                     exit=1
+                    fi
                     break
                     ;;
                 *) print "invalid option $REPLY" "white" "red";;
             esac
+            # press any key to continue
+            read -n 1 -s -r -p "Press any key to continue . . ."
+            clear
+            break
         done
 
     else
@@ -91,6 +100,9 @@ while [[ exit -ne 1 ]]; do
                     ;;
                 *) print "invalid option $REPLY" "white" "red";;
             esac
+            read -n 1 -s -r -p "Press any key to continue . . ."
+            clear
+            break
         done
     fi
 done
