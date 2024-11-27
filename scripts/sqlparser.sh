@@ -58,6 +58,7 @@ function parseQuery() {
         columns=$(echo $1 | grep -ioP '(?<=\().*(?=\) values)')
         values=$(echo $1 | grep -ioP '(?<=values \().*(?=\))')
         echo $table
+        echo $columns
         echo $values
         return
     elif [[ $1 =~ ^[[:space:]]*[dD][rR][oO][pP][[:space:]]+[tT][aA][bB][lL][eE] ]]; then
@@ -76,14 +77,62 @@ function parseQuery() {
         columnDefs=$(echo $1 | grep -oP '(?<=\().*(?=\))')
         echo "Column Definitions: $columnDefs"
 
-        # Extract column names, data types, and constraints
-        columnNames=($(echo $columnDefs | grep -oP '^[^ ]+'))
-        dataTypes=($(echo $columnDefs | grep -oP '[a-zA-Z0-9]+[ ]*[a-zA-Z0-9]*' | awk '{print $1}'))
-        constraints=($(echo $columnDefs | grep -oP 'NOT NULL|PRIMARY KEY|UNIQUE'))
+        # split the column definitions into an array over the comma
+        IFS=',' read -r -a columnDefs <<< "$columnDefs"
+        echo "Column Definitionsa7aaaa: ${columnDefs[0]}"
 
-        echo "Column Names: ${columnNames[@]}"
-        echo "Data Types: ${dataTypes[@]}"
-        echo "Constraints: ${constraints[@]}"
+        declare -a column_names
+        declare -a column_types
+        declare -a column_sizes
+        declare -a column_constraints
+
+
+        # loop through the column definitions
+        for columnDef in "${columnDefs[@]}"; do
+            # split over the space
+            IFS=' ' read -r -a column_names_dt <<< "$columnDef"
+
+            # push the column name to the column_names array
+            column_names+=("${column_names_dt[0]}")
+            
+            # handling the data type
+            if [[ ${column_names_dt[1]} =~ [iI][nN][tT] ]]; then
+                column_types+=("int")
+                column_sizes+=("4")
+            elif [[ ${column_names_dt[1]} =~ [vV][aA][rR][cC][hH][aA][rR] ]]; then
+                column_types+=("varchar")
+                column_sizes+=($(echo ${column_names_dt[1]} | grep -oP '\d+'))
+            fi
+            
+            # handling the constraints
+            constraint=""
+            # handling primary key constraint
+            if [[ $columnDef =~ [pP][rR][iI][mM][aA][rR][yY] ]]; then
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            # handling not null constraint
+            if [[ $columnDef =~ [nN][oO][tT][[:space:]]+[nN][uU][lL][lL] ]]; then 
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            # handling unique constraint
+            if [[ $columnDef =~ [uU][nN][iI][qQ][uU][eE] ]]; then
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            column_constraints+=("$constraint")
+
+        done
+        echo "Column Names: ${column_names[@]}"
+        echo "Column Types: ${column_types[@]}"
+        echo "Column Sizes: ${column_sizes[@]}"
+        echo "Column Constraints: ${column_constraints[@]}"
+
+        
     elif [[ $1 =~ ^[[:space:]]*[cC][lL][eE][aA][rR] ]]; then
         clear
     else
@@ -92,3 +141,16 @@ function parseQuery() {
     fi
     set +f
 }
+
+# create table query
+# parseQuery "
+
+#     CREATE TABLE users (
+#         id         INT  PRIMARY KEY    , 
+#         name                VARCHAR(255) unique, 
+#         email                     VARCHAR(255)       NOT              NULL    unique     )
+# "
+
+parseQuery "
+    insert into users (id, name, email) values (1, 'ahmed', 'lol')
+" 

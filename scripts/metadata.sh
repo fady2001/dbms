@@ -287,10 +287,10 @@ function getColumnNullConstraint() {
             for (i = 5; i <= NF; i+=4) {
                 if ($(i-3) == column_name) {
                     if (substr($i, 2, 1) == "y") {
-                        print 1
+                        print 0
                         exit
                     } else {
-                        print 0
+                        print 1
                         exit
                     }
                 }

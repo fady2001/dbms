@@ -121,6 +121,8 @@ function insertIntoTable() {
     record=""
     for column in $columns; do
         read -p "Enter $column: " value
+        # remove qoutes if exists
+        value=$(echo $value | tr -d "'")
 
         # check if the value follows the constraints
         if [[ $(followConstraints $1 $column $value) -eq 0 ]]; then
