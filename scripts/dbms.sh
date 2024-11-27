@@ -40,6 +40,8 @@ while [[ exit -ne 1 ]]; do
                     connected=$?
                     CURRENT_DB_NAME=$dbName
                     CURRENT_DB_PATH=$PWD
+                    read -n 1 -s -r -p "Press any key to continue . . ."
+                    clear
                     break
                     ;;
                 "Drop a database")
@@ -96,6 +98,8 @@ while [[ exit -ne 1 ]]; do
                     ;;
                 "Exit")
                     connected=1
+                    cd ..
+                    clear
                     break
                     ;;
                 *) print "invalid option $REPLY" "white" "red";;

@@ -115,6 +115,7 @@ function getColumnIndex() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
         print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        echo -1
         return
     fi
     # Variable for column index (initialized to -1, in case we don't find it)
