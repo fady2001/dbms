@@ -271,7 +271,7 @@ function containsColon() {
 
 # Function to handle the comparison logic. it takes 3 arguments: operator, field_value, condition_value
 # returns 1 if the condition is true, 0 if the condition is false, -1 if the operator is not recognized
-function evaluate_condition() {
+function evaluate_operator() {
     operator=$1
     field_value=$2
     condition_value=$3
@@ -364,7 +364,7 @@ function evaluateConditions() {
         #actual index in the table file equals (index/4)+1
         index=$((index/4))
         # Evaluate the condition
-        result=$(evaluate_condition "$operator" "${fields[$index]}" "$cond_RHS")
+        result=$(evaluate_operator "$operator" "${fields[$index]}" "$cond_RHS")
         if [[ $result -eq -1 ]]; then
             echo -1
             return
@@ -387,7 +387,7 @@ function evaluateConditions() {
         # Evaluate the condition
         # echo field: ${fields[$index]} operator: $operator cond_RHS: $cond_RHS
         # echo op: $operator fld: ${#fields[$index]} cond: ${#cond_RHS} 
-        result=$(evaluate_condition "$operator" "${fields[$index]}" "$cond_RHS")
+        result=$(evaluate_operator "$operator" "${fields[$index]}" "$cond_RHS")
         print "result: $result" "white" "green"
         if [[ $result -eq -1 ]]; then
             echo -1
