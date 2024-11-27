@@ -63,8 +63,15 @@ function listDatabases() {
         print "No read permission in the current directory" "white" "red"
         return
     fi
-    print "Listing Databases" "white" "green"
-    ls -d */ | nl | sed 's|/||'
+
+    # check if there are no databases
+    if [[ $(find . -maxdepth 1 -type d ! -name . | wc -l) -eq 0 ]]; then
+        print "No databases found" "white" "red"
+        return
+    else
+        print "Listing Databases" "white" "green"
+        ls -d */ | nl | sed 's|/||'
+    fi
 }
 
 # function that connect to a database
