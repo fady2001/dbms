@@ -7,8 +7,8 @@
 #
 ################################################################################
 
-export CURRENT_DB_PATH="$PWD/iti"
-export CURRENT_DB_NAME="iti"
+# export CURRENT_DB_PATH="$PWD/iti"
+# export CURRENT_DB_NAME="iti"
 
 # Load the helper functions
 source ./helper.sh
@@ -162,9 +162,6 @@ function updateTable() {
     # values=(23)
     # conditions="id=3"
 
-    echo ${columns[@]}
-    echo ${values[@]}
-
     # get column indecies in table file
     declare -a indecies
     for column in ${columns[@]}; do
@@ -195,9 +192,14 @@ function updateTable() {
         fi
     done
 
+    # create a temporary hidden file to store the updated table to back up the original table
+    touch .temp
+    cp $1 .temp
+
     # loop over the table file
     while IFS= read -r line; do
-        if [[ $(evaluateConditions $1 $line $conditions) -eq 1 ]]; then
+        eval_cond=$(evaluateConditions $1 $line $conditions)
+        if [[ $eval_cond -eq 1 ]]; then
             # split the line by delimiter
             IFS=':' read -r -a fields <<< $line
             for i in ${indecies[@]}; do
@@ -212,12 +214,20 @@ function updateTable() {
             new_line=${new_line%?}
             # update the line in the table file
             sed -i "s/$line/$new_line/" $1
-        elif [[ $(evaluateConditions $1 $line $conditions) -eq -1 ]]; then
+        elif [[ $eval_cond -eq -1 ]]; then
             print "Invalid operator" "white" "red"
             return
         fi
     done < $1
-    print "Table updated successfully" "white" "green"
+    # check if constraints are violated after updating
+    if [[ $(satisfyConstraints $1 $columns) -eq 0 ]]; then
+        # restore the original table
+        mv .temp $1
+    else
+        # remove the temporary file
+        rm .temp
+        print "Table updated successfully" "white" "green"
+    fi
 }
 
 # function that select from a Table

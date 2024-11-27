@@ -21,8 +21,23 @@ function parseQuery() {
         print "Query is empty" "white" "red"
         return
     fi
-
-    if [[ $1 =~ ^[[:space:]]*[sS][eE][lL][eE][cC][tT] ]]; then
+    ###############################################################
+    #                     database queries                        #
+    ###############################################################
+    if [[ $1 =~ ^[[:space:]]*[cC][rR][eE][aA][tT][eE][[:space:]]+[dD][aA][tT][aA][bB][aA][sS][eE] ]]; then
+        echo "Create database query"
+        dbName=$(echo $1 | grep -ioP '(?<=database )[^ ]+(?=[$;])')
+        echo $dbName
+        return
+    elif [[ $1 =~ ^[[:space:]]*[dD][rR][oO][pP][[:space:]]+[dD][aA][tT][aA][bB][aA][sS][eE] ]]; then
+        echo "Drop database query"
+        dbName=$(echo $1 | grep -ioP '(?<=database )[^ ]+(?=[$;])')
+        echo $dbName
+        return
+    ###############################################################
+    #                     Tables queries                          #
+    ###############################################################
+    elif [[ $1 =~ ^[[:space:]]*[sS][eE][lL][eE][cC][tT] ]]; then
         columns=$(echo $1 | grep -ioP '(?<=select ).*(?= from)')
         table=$(echo $1 | grep -ioP '(?<=from )[^ ]+(?= where|$)')
         conditions=$(echo $1 | grep -ioP '(?<=where ).*(?=[$;])')
@@ -48,11 +63,34 @@ function parseQuery() {
         echo "Insert query"
         table=$(echo $1 | grep -ioP '(?<=into )[^ ]+(?= \(| values)')
         columns=$(echo $1 | grep -ioP '(?<=\().*(?=\) values)')
-        values=$(echo $1 | grep -ioP '(?<=values ).*(?=[$;])')
-        
+        values=$(echo $1 | grep -ioP '(?<=values \().*(?=\))')
         echo $table
         echo $values
         return
+    elif [[ $1 =~ ^[[:space:]]*[dD][rR][oO][pP][[:space:]]+[tT][aA][bB][lL][eE] ]]; then
+        echo "Drop query"
+        table=$(echo $1 | grep -ioP '(?<=table )[^ ]+(?=[$;])')
+        echo $table
+        return
+    elif [[ $1 =~ ^[[:space:]]*[cC][rR][eE][aA][tT][eE][[:space:]]+[tT][aA][bB][lL][eE] ]]; then
+        echo "Create table query"
+        
+        # Extract the table name (after CREATE TABLE and before the parentheses)
+        tableName=$(echo $1 | grep -ioP '(?<=create table )[^ ]+(?=\s*\()')
+        echo "Table Name: $tableName"
+
+        # Extract column definitions (everything inside the parentheses after CREATE TABLE)
+        columnDefs=$(echo $1 | grep -oP '(?<=\().*(?=\))')
+        echo "Column Definitions: $columnDefs"
+
+        # Extract column names, data types, and constraints
+        columnNames=($(echo $columnDefs | grep -oP '^[^ ]+'))
+        dataTypes=($(echo $columnDefs | grep -oP '[a-zA-Z0-9]+[ ]*[a-zA-Z0-9]*' | awk '{print $1}'))
+        constraints=($(echo $columnDefs | grep -oP 'NOT NULL|PRIMARY KEY|UNIQUE'))
+
+        echo "Column Names: ${columnNames[@]}"
+        echo "Data Types: ${dataTypes[@]}"
+        echo "Constraints: ${constraints[@]}"
     else
         print "Invalid query" "white" "red"
         return
@@ -60,7 +98,12 @@ function parseQuery() {
     set +f
 }
 
-parseQuery "    
-    insert into emp (id, name, salary) values (2, 'ali', 2000);
+parseQuery "
+
+create table students (
+    id int ,
+    name varchar(20),
+    age int
+);
 
 "

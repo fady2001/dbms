@@ -94,7 +94,10 @@ function addTableToMetadata() {
         # append the column metadata to the table metadata in a new line
         tableMetadata+="$columnName:$columnType:$columnSize:$columnConstraints:"
     done
-
+    if [[ $isPrimaryKeySet -eq 0 ]]; then
+        print "Primary key is not set" "white" "red"
+        return
+    fi
     # Remove the trailing ':' from the last column
     tableMetadata=${tableMetadata%?}
 
@@ -111,7 +114,7 @@ function addTableToMetadata() {
 function getColumnIndex() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        echo "Metadata file for database $CURRENT_DB_NAME does not exist"
+        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for column index (initialized to -1, in case we don't find it)
@@ -216,7 +219,7 @@ function getColumnSize() {
 function getPrimaryKey() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        echo "Metadata file for database $CURRENT_DB_NAME does not exist"
+        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for primary key (initialized to -1, in case we don't find it)
@@ -247,11 +250,11 @@ function getPrimaryKey() {
 # function that takes and table name and column name and return the column null constraint
 # $1: table name
 # $2: column name
-# return: if column name exists return the null constraint of the column, otherwise return -1
+# return: 1 if the column is nullable, 0 otherwise, -1 if the column does not exist
 function getColumnNullConstraint() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        echo "Metadata file for database $CURRENT_DB_NAME does not exist"
+        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for column null constraint (initialized to -1, in case we don't find it)
@@ -265,10 +268,10 @@ function getColumnNullConstraint() {
             for (i = 5; i <= NF; i+=4) {
                 if ($(i-3) == column_name) {
                     if (substr($i, 2, 1) == "y") {
-                        print "true"
+                        print 1
                         exit
                     } else {
-                        print "false"
+                        print 0
                         exit
                     }
                 }
@@ -287,11 +290,11 @@ function getColumnNullConstraint() {
 # function that takes and table name and column name and return the column unique constraint
 # $1: table name
 # $2: column name
-# return: if column name exists return the unique constraint of the column, otherwise return -1
+# return: 1 if the column is unique, 0 otherwise, -1 if the column does not exist
 function getColumnUniqueConstraint() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        echo "Metadata file for database $CURRENT_DB_NAME does not exist"
+        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for column unique constraint (initialized to -1, in case we don't find it)
@@ -305,10 +308,10 @@ function getColumnUniqueConstraint() {
             for (i = 5; i <= NF; i+=4) {
                 if ($(i-3) == column_name) {
                     if (substr($i, 3, 1) == "y") {
-                        print "true"
+                        print 1
                         exit
                     } else {
-                        print "false"
+                        print 0
                         exit
                     }
                 }
@@ -331,7 +334,7 @@ function getColumnUniqueConstraint() {
 function getColumnNames() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        echo "Metadata file for database $CURRENT_DB_NAME does not exist"
+        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
 

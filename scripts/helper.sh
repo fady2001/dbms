@@ -233,6 +233,50 @@ function containsNulls () {
         }} END { if (!flag) print 0}' "$1")
 }
 
+# helper function that takes the table path and array of column names and checks all constraints on the given columns
+# $1: table path
+# $2: array of column names
+# returns 1 if all constraints are met, 0 otherwise
+function satisfyConstraints() {
+    for column in $2; do
+        # check if the column contains duplicates
+        index=$(getColumnIndex $1 $column)
+        index=$((index/4+1))
+        # check if the column has unique constraint but contains duplicates
+        if [[ $(getColumnUniqueConstraint $1 $column) -eq 1 && $(containsDublicates $1 $index) -eq 1 ]]; then
+            print "Column $column has unique constraint but contains duplicates" "white" "red"
+            echo 0
+            return
+        fi
+
+        # check if the column has not null constraint but contains nulls
+        if [[ $(getColumnNullConstraint $1 $column) -eq 1 && $(containsNulls $1 $index) -eq 1 ]]; then
+            print "Column $column has not null constraint but contains nulls" "white" "red"
+            echo 0
+            return
+        fi
+
+        # check if the column has primary key constraint but contains nulls
+        pk=$(getPrimaryKey $1)
+        #get index of the primary key
+        pk=$(getColumnIndex $1 $pk)
+        pk=$((pk/4+1))
+        if [[ $pk -eq $index && $(containsNulls $1 $index) -eq 1 ]]; then
+            print "Column $column has primary key constraint but contains nulls" "white" "red"
+            echo 0
+            return
+        fi
+
+        # check if the column has primary key constraint but contains duplicates
+        if [[ $pk -eq $index && $(containsDublicates $1 $index) -eq 1 ]]; then
+            print "Column $column has primary key constraint but contains duplicates" "white" "red"
+            echo 0
+            return
+        fi
+    done
+    echo 1
+}
+
 # helper function that takes the table path and the column index and value and checks if value exists in the column or not
 # $1: table path
 # $2: column index
