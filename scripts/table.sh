@@ -226,7 +226,6 @@ function updateTable() {
             done
             # remove trialing :
             new_line=${new_line%?}
-            echo "New line: $new_line" 
             # update the line in the table file
             sed -i "s/$line/$new_line/" $1
         elif [[ $eval_cond -eq -1 ]]; then
