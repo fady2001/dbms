@@ -7,8 +7,8 @@
 #
 ################################################################################
 
-export CURRENT_DB_PATH="$PWD/iti"
-export CURRENT_DB_NAME="iti"
+# export CURRENT_DB_PATH="$PWD/iti"
+# export CURRENT_DB_NAME="iti"
 
 # Load the helper functions
 source ./helper.sh
@@ -102,6 +102,7 @@ function dropTable() {
     
         # drop the Table
         rm $1
+        dropTableFromMetadata $1
         print "Table dropped successfully" "white" "green"
     
 }
@@ -149,33 +150,34 @@ function updateTable() {
     declare -a values
 
     # get column names that user wants to update separated by comma
-    # IFS=','
-    # read -p "Enter the columns you want to update separated by comma: " -a columns
-    # # get values for the columns separated by comma
-    # IFS=','
-    # read -p "Enter the values you want to update separated by comma: " -a values
-    # # get conditions
-    # read -p "Enter the conditions like sql (age=30 and/or id=10): " conditions
+    IFS=','
+    read -p "Enter the columns you want to update separated by comma: " -a columns
+    # get values for the columns separated by comma
+    IFS=','
+    read -p "Enter the values you want to update separated by comma: " -a values
+    # get conditions
+    read -p "Enter the conditions like sql (age=30 and/or id=10): " conditions
 
     # declare hard coded values for testing
-    columns=("id")
-    values=(23)
-    conditions="id=4"
+    # columns=("name")
+    # values=(fady)
+    # conditions="id=23"
+
+    # remove leading and trailing whitespaces
+    for i in ${!columns[@]}; do
+        columns[$i]=$(echo ${columns[$i]} | tr -d ' ')
+    done
+    for i in ${!values[@]}; do
+        values[$i]=$(echo ${values[$i]} | tr -d ' ')
+    done
+    
 
     # get column indecies in table file
     declare -a indecies
     for column in ${columns[@]}; do
-        # trim leading and trailing whitespaces
-        column=$(echo $column | tr -d ' ')
         echo "Column: $column"
         # get column index
         index=$(getColumnIndex $1 $column)
-        if [[ $index -eq -1 ]]; then
-            return
-        else
-            # actual index in the table file equals (index/4)+1
-            indecies+=($((index/4+1)))
-        fi
         # check if the column exists
         if [[ $index -eq -1 ]]; then
             print "Column $column does not exist in the table" "white" "red"
@@ -210,7 +212,12 @@ function updateTable() {
             # split the line by delimiter
             IFS=':' read -r -a fields <<< $line
             for i in ${indecies[@]}; do
-                fields[$i-1]=${values[$i-1]}
+                # values idx starts from 0
+                idx=$((0))
+                # update the field
+                fields[$i-1]=${values[$idx]}
+                # increment the values idx
+                idx=$((idx+1))
             done
             # update the line
             new_line=""
@@ -238,7 +245,7 @@ function updateTable() {
     fi
 }
 
-updateTable emp
+# updateTable emp
 
 
 # function that select from a Table

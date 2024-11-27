@@ -47,6 +47,8 @@ function addTableToMetadata() {
     for ((i = 1; i <= $columnCount; i++)); do
         echo "Enter details for column $i in the format: name type size isPK isNull isUnique (e.g., id int 4 yyy)"
         read -p "Column $i details: " columnDetails
+        # end line
+        echo
 
         # Split the input by space into an array
         IFS=' ' 
@@ -104,7 +106,23 @@ function addTableToMetadata() {
     # Append the table metadata to the metadata file
 
     echo "$1:$tableMetadata" >> "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
-    echo "Table $1 added to metadata."
+    print "Table $1 added to metadata." "white" "green"
+}
+
+# Function that drops a table from the metadata file
+# $1: table name
+# return: 1 if the table was dropped successfully, 0 otherwise
+function dropTableFromMetadata() {
+    # Check if the metadata file exists
+    if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
+        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        echo 0
+        return
+    fi
+
+    # Remove the table metadata from the metadata file
+    sed -i "/^$1:/d" "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    print "Table $1 dropped from metadata." "white" "green"
 }
 
 # function that takes and table name and column name and return the column index
