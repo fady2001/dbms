@@ -1,11 +1,11 @@
 import * as React from "react";
 import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import { AppBar } from "./styles";
 import ModeSwitch from "./ModeSwitch";
-import { Box } from "@mui/material";
-import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+
 
 export default function CustomAppBar() {
   return (
@@ -23,7 +23,12 @@ export default function CustomAppBar() {
           Mini variant drawer
         </Typography>
       </Toolbar>
+      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+      <Button variant="contained" color="success" sx={{ ml: 2 }} onClick={() => console.log('Run Query')}>
+        Run Query
+      </Button>
         <ModeSwitch />
+      </Box>
     </AppBar>
   );
 }
