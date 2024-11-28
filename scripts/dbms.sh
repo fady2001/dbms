@@ -59,7 +59,7 @@ run_menu_mode() {
                         fi
                         break
                         ;;
-                    *) print "invalid option $REPLY" "white" "red";;
+                    *) print "Error: invalid option $REPLY" "white" "red";;
                 esac
                 # press any key to continue
                 read -n 1 -s -r -p "Press any key to continue . . ."
@@ -104,7 +104,7 @@ run_menu_mode() {
                         clear
                         break
                         ;;
-                    *) print "invalid option $REPLY" "white" "red";;
+                    *) print "Error: invalid option $REPLY" "white" "red";;
                 esac
                 read -n 1 -s -r -p "Press any key to continue . . ."
                 clear

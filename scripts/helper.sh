@@ -245,14 +245,14 @@ function satisfyConstraints() {
         index=$((index/4+1))
         # check if the column has unique constraint but contains duplicates
         if [[ $(getColumnUniqueConstraint $1 $column) -eq 1 && $(containsDublicates $1 $index) -eq 1 ]]; then
-            print "Column $column has unique constraint but contains duplicates" "white" "red"
+            print "Error: Column $column has unique constraint but contains duplicates" "white" "red"
             echo 0
             return
         fi
 
         # check if the column has not null constraint but contains nulls
         if [[ $(getColumnNullConstraint $1 $column) -eq 1 && $(containsNulls $1 $index) -eq 1 ]]; then
-            print "Column $column has not null constraint but contains nulls" "white" "red"
+            print "Error: Column $column has not null constraint but contains nulls" "white" "red"
             echo 0
             return
         fi
@@ -263,14 +263,14 @@ function satisfyConstraints() {
         pk=$(getColumnIndex $1 $pk)
         pk=$((pk/4+1))
         if [[ $pk -eq $index && $(containsNulls $1 $index) -eq 1 ]]; then
-            print "Column $column has primary key constraint but contains nulls" "white" "red"
+            print "Error: Column $column has primary key constraint but contains nulls" "white" "red"
             echo 0
             return
         fi
 
         # check if the column has primary key constraint but contains duplicates
         if [[ $pk -eq $index && $(containsDublicates $1 $index) -eq 1 ]]; then
-            print "Column $column has primary key constraint but contains duplicates" "white" "red"
+            print "Error: Column $column has primary key constraint but contains duplicates" "white" "red"
             echo 0
             return
         fi

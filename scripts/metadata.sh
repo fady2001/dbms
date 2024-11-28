@@ -17,7 +17,7 @@ function createMetadataFile() {
     # there are no checks needed as they are already checked in the database.sh script
     # Create the hidden metadata file inside the database directory
     touch "$1/.$1"
-    print "Metadata file created for database $1" "white" "green"
+    print "Metadata file created for database $1 successfully" "white" "green"
 }
 
 # Function that adds a new table to the metadata file
@@ -25,7 +25,7 @@ function createMetadataFile() {
 function addTableToMetadata() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
 
@@ -97,7 +97,7 @@ function addTableToMetadata() {
         tableMetadata+="$columnName:$columnType:$columnSize:$columnConstraints:"
     done
     if [[ $isPrimaryKeySet -eq 0 ]]; then
-        print "Primary key is not set" "white" "red"
+        print "Error: Primary key is not set" "white" "red"
         return
     fi
     # Remove the trailing ':' from the last column
@@ -106,7 +106,7 @@ function addTableToMetadata() {
     # Append the table metadata to the metadata file
 
     echo "$1:$tableMetadata" >> "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
-    print "Table $1 added to metadata." "white" "green"
+    print "Table $1 added to metadata successfully." "white" "green"
 }
 
 # Function that drops a table from the metadata file
@@ -115,14 +115,14 @@ function addTableToMetadata() {
 function dropTableFromMetadata() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         echo 0
         return
     fi
 
     # Remove the table metadata from the metadata file
     sed -i "/^$1:/d" "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
-    print "Table $1 dropped from metadata." "white" "green"
+    print "Table $1 dropped from metadata successfully." "white" "green"
 }
 
 # function that takes and table name and column name and return the column index
@@ -132,7 +132,7 @@ function dropTableFromMetadata() {
 function getColumnIndex() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         echo -1
         return
     fi
@@ -238,7 +238,7 @@ function getColumnSize() {
 function getPrimaryKey() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for primary key (initialized to -1, in case we don't find it)
@@ -273,7 +273,7 @@ function getPrimaryKey() {
 function getColumnNullConstraint() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for column null constraint (initialized to -1, in case we don't find it)
@@ -313,7 +313,7 @@ function getColumnNullConstraint() {
 function getColumnUniqueConstraint() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for column unique constraint (initialized to -1, in case we don't find it)
@@ -353,7 +353,7 @@ function getColumnUniqueConstraint() {
 function getColumnNames() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
 
@@ -397,14 +397,14 @@ function followConstraints() {
     if [[ $(getPrimaryKey $1) == $2 ]]; then
         # check if the value is empty
         if [[ -z $3 || $3 == "" || $3 == "null" ]]; then
-            print "Primary key must not null" "white" "red"
+            print "Error: Primary key must not null" "white" "red"
             echo 0
             return
         fi
         # check if the value exists in the table
         # index will be (index/4)+1 to map between index in metadata and index in the actual table
         if [[ $(valueExists $1 $((index/4+1)) $3) -eq 1 ]]; then
-            print "Primary key must be unique" "white" "red"
+            print "Error: Primary key must be unique" "white" "red"
             echo 0
             return
         fi
@@ -414,7 +414,7 @@ function followConstraints() {
     if [[ $(getColumnNullConstraint $1 $2) -eq 1 ]]; then
         # check if the value is empty or "" or equal to null
         if [[ -z $3 || $3 == "" || $3 == "null" ]]; then
-            print "$2 must not be null" "white" "red"
+            print "Error: $2 must not be null" "white" "red"
             echo 0
             return 
         fi
@@ -424,7 +424,7 @@ function followConstraints() {
     if [[ $(getColumnUniqueConstraint $1 $2) -eq 1 ]]; then
         # check if the value exists in the table
         if [[ $(valueExists $1 $index $3) -eq 1 ]]; then
-            print "$2 must be unique" "white" "red"
+            print "Error: $2 must be unique" "white" "red"
             echo 0
             return
         fi
@@ -433,13 +433,13 @@ function followConstraints() {
     # fourth check: check data type
     if [[ $(getColumnType $1 $2) == "int" ]]; then
         if [[ $(isNumber $3) -eq 0 ]]; then
-            print "$2 must be an integer" "white" "red"
+            print "Error: $2 must be an integer" "white" "red"
             echo 0
             return
         fi
     elif [[ $(getColumnType $1 $2) == "varchar" ]]; then
         if [[ $(containsColon $3) -eq 1 ]]; then
-            print "$2 must not contain :" "white" "red"
+            print "Error: $2 must not contain :" "white" "red"
             echo 0
             return
         fi
@@ -447,7 +447,7 @@ function followConstraints() {
 
     # fifth check: check data length
     if [[ $(getColumnSize $1 $2) -lt ${#3} ]]; then
-        print "$2 must not exceed $(getColumnSize $1 $2) characters" "white" "red"
+        print "Error: $2 must not exceed $(getColumnSize $1 $2) characters" "white" "red"
         echo 0
         return
     fi

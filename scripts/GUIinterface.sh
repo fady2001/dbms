@@ -3,6 +3,12 @@
 ##################################################################
 # This file contains scripts for interacting with (electron) GUI
 ##################################################################
+source ./database.sh
+source ./table.sh
+source ./sqlparser.sh
+source ./sqlhandler.sh
+source ./helper.sh
+source ./metadata.sh
 
 if [[ $1 == "--listDatabases" ]]; then
     listDatabases
@@ -15,5 +21,5 @@ elif [[ $1 == "--listColumns" ]]; then
 elif [[ $1 == "--sql" ]]; then
     parseQuery $2,.
 else
-    print "Invalid command" "white" "red"
+    print "Error: Invalid command" "white" "red"
 fi

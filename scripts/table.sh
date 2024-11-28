@@ -19,37 +19,37 @@
 function createTable() {
     # check if the Table name is alphanumeric
     if [[ $(isAlphaNumeric $1) -eq 0 ]]; then
-        print "Table name should be alphanumeric" "white" "red"
+        print "Error: Table name should be alphanumeric" "white" "red"
         return
     fi
 
     # check if the Table already exists
     if [[ $(fileExists $1) -eq 1 ]]; then
-        print "Table already exists" "white" "red"
+        print "Error: Table already exists" "white" "red"
         return
     fi
 
     # check if the Table name is too long
     if [[ $(isNameTooLong $1) -eq 1 ]]; then
-        print "Table name is too long" "white" "red"
+        print "Error: Table name is too long" "white" "red"
         return
     fi
 
     # check if the path is too long
     if [[ $(isPathTooLong $1) -eq 1 ]]; then
-        print "Path is too long" "white" "red"
+        print "Error: Path is too long" "white" "red"
         return
     fi
 
     # check if we have write permission in the current directory
     if [[ $(hasWritePermission) -eq 0 ]]; then
-        print "No write permission in the current directory" "white" "red"
+        print "Error: No write permission in the current directory" "white" "red"
         return
     fi
 
     # check if we have execute permission in the current directory
     if [[ $(hasExecutePermission) -eq 0 ]]; then
-        print "No execute permission in the current directory" "white" "red"
+        print "Error: No execute permission in the current directory" "white" "red"
         return
     fi
 
@@ -64,7 +64,7 @@ function createTable() {
 function listTables() {
     # check if we have read permission in the current directory
     if [[ $(hasReadPermission) -eq 0 ]]; then
-        print "No read permission in the current directory" "white" "red"
+        print "Error: No read permission in the current directory" "white" "red"
         return
     fi
 
@@ -78,25 +78,25 @@ function dropTable() {
         
         # check if the Table name is alphanumeric
         if [[ $(isAlphaNumeric $1) -eq 0 ]]; then 
-            print "Table name should be alphanumeric" "white" "red"
+            print "Error: Table name should be alphanumeric" "white" "red"
             return
         fi
     
         # check if the Table exists
         if [[ $(fileExists $1) -eq 0 ]]; then
-            print "Table does not exist" "white" "red"
+            print "Error: Table does not exist" "white" "red"
             return
         fi
     
         # check if we have write permission in the current directory
         if [[ $(hasWritePermission) -eq 0 ]]; then
-            print "No write permission in the current directory" "white" "red"
+            print "Error: No write permission in the current directory" "white" "red"
             return
         fi
     
         # check if we have execute permission in the current directory
         if [[ $(hasExecutePermission) -eq 0 ]]; then
-            print "No execute permission in the current directory" "white" "red"
+            print "Error: No execute permission in the current directory" "white" "red"
             return
         fi
     
@@ -112,7 +112,7 @@ function dropTable() {
 function insertIntoTable() {
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Error: Table does not exist" "white" "red"
         return
     fi
 
@@ -144,7 +144,7 @@ function insertIntoTable() {
 function updateTable() {
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Error: Table does not exist" "white" "red"
         return
     fi
 
@@ -182,7 +182,7 @@ function updateTable() {
         index=$(getColumnIndex $1 $column)
         # check if the column exists
         if [[ $index -eq -1 ]]; then
-            print "Column $column does not exist in the table" "white" "red"
+            print "Error: Column $column does not exist in the table" "white" "red"
             return
         else
             # actual index in the table file equals (index/4)+1
@@ -192,7 +192,7 @@ function updateTable() {
 
     # check if values length is larger than columns length
     if [[ ${#values[@]} -ne ${#columns[@]} ]]; then
-        print "Number of values is not equal to number of columns" "white" "red"
+        print "Error: Number of values is not equal to number of columns" "white" "red"
         return
     fi
 
@@ -231,7 +231,7 @@ function updateTable() {
             # update the line in the table file
             sed -i "s/$line/$new_line/" $1
         elif [[ $eval_cond -eq -1 ]]; then
-            print "Invalid operator" "white" "red"
+            print "Error: Invalid operator" "white" "red"
             return
         fi
     done < $1
@@ -255,7 +255,7 @@ function selectFromTable() {
     set -f
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Error: Table does not exist" "white" "red"
         return
     fi
 
@@ -285,7 +285,7 @@ function selectFromTable() {
         index=$(getColumnIndex $1 $column)
         # check if the column exists
         if [[ $index -eq -1 ]]; then
-            print "Column $column does not exist in the table" "white" "red"
+            print "Error: Column $column does not exist in the table" "white" "red"
             return
         else
             # actual index in the table file equals (index/4)+1
@@ -317,7 +317,7 @@ function selectFromTable() {
             output=${output%?}
             output="$output"\n
         elif [[ $eval_cond -eq -1 ]]; then
-            print "Invalid operator" "white" "red"
+            print "Error: Invalid operator" "white" "red"
             return
         fi
     done < $1
@@ -330,7 +330,7 @@ function selectFromTable() {
 function deleteFromTable() {
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Error: Table does not exist" "white" "red"
         return
     fi
 
@@ -345,7 +345,7 @@ function deleteFromTable() {
             # delete the line from the table file
             sed -i "/$line/d" $1
         elif [[ $eval_cond -eq -1 ]]; then
-            print "Invalid operator" "white" "red"
+            print "Error: Invalid operator" "white" "red"
             return
         fi
     done < $1

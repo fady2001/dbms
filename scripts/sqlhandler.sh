@@ -20,48 +20,48 @@ function sqlcreateTable() {
     local -n col_constraints=$5
     # check if meta data file exists
     if [[ ! -f $CURRENT_DB_PATH/.$CURRENT_DB_NAME ]]; then
-        print "No database is connected" "white" "red"
+        print "Error: No database is connected" "white" "red"
         return
     fi
     # check that number of elements in columns' names, data types, sizes and constraints are equal
     if [[ ${#col_names[@]} -ne ${#col_types[@]} || ${#col_names[@]} -ne ${#col_sizes[@]} || ${#col_names[@]} -ne ${#col_constraints[@]} ]]; then
-        print "An error in parsing columns" "white" "red"
+        print "Error: An error in parsing columns" "white" "red"
         return
     fi
 
     # check if the table name is empty (indicator of parsing problem)
     if [[ -z $1 ]]; then
-        print "an error in parsing table name" "white" "red"
+        print "Error: an error in parsing table name" "white" "red"
         return
     fi
     
     # check if the table already exists
     if [[ $(fileExists $1) -eq 1 ]]; then
-        print "Table already exists" "white" "red"
+        print "Error: Table already exists" "white" "red"
         return
     fi
 
     # check if the table name is too long
     if [[ $(isNameTooLong $1) -eq 1 ]]; then
-        print "Table name is too long" "white" "red"
+        print "Error: Table name is too long" "white" "red"
         return
     fi
 
     # check if the path is too long
     if [[ $(isPathTooLong $1) -eq 1 ]]; then
-        print "Path is too long" "white" "red"
+        print "Error: Path is too long" "white" "red"
         return
     fi
 
     # check if we have write permission in the current directory
     if [[ $(hasWritePermission) -eq 0 ]]; then
-        print "No write permission in the current directory" "white" "red"
+        print "Error: No write permission in the current directory" "white" "red"
         return
     fi
 
     # check if we have execute permission in the current directory
     if [[ $(hasExecutePermission) -eq 0 ]]; then
-        print "No execute permission in the current directory" "white" "red"
+        print "Error: No execute permission in the current directory" "white" "red"
         return
     fi
 
@@ -86,7 +86,7 @@ function sqlcreateTable() {
 function sqlinsertIntoTable() {
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Error: Table does not exist" "white" "red"
         return
     fi
 
@@ -125,7 +125,7 @@ function sqlUpdateTable() {
 
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Error: Table does not exist" "white" "red"
         return
     fi
 
@@ -136,7 +136,7 @@ function sqlUpdateTable() {
         index=$(getColumnIndex $1 $col)
         # check if the column exists
         if [[ $index -eq -1 ]]; then
-            print "Column $col does not exist in the table" "white" "red"
+            print "Error: Column $col does not exist in the table" "white" "red"
             return
         else
             # actual index in the table file equals (index/4)+1
@@ -146,7 +146,7 @@ function sqlUpdateTable() {
 
     # check if values length is larger than columns length
     if [[ ${#vals[@]} -ne ${#cols[@]} ]]; then
-        print "Number of values is not equal to number of columns" "white" "red"
+        print "Error: Number of values is not equal to number of columns" "white" "red"
         return
     fi
 
@@ -185,7 +185,7 @@ function sqlUpdateTable() {
             # update the line in the table file
             sed -i "s/$line/$new_line/" $1
         elif [[ $eval_cond -eq -1 ]]; then
-            print "Invalid operator" "white" "red"
+            print "Error: Invalid operator" "white" "red"
             return
         fi
     done < $1
@@ -207,7 +207,7 @@ function sqlDeleteFromTable() {
     conds=$2
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Error: Table does not exist" "white" "red"
         return
     fi
 
@@ -234,7 +234,7 @@ function sqlSelectFromTable() {
     conds=$3
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table doese not exist" "white" "red"
+        print "Error: Table doese not exist" "white" "red"
         return
     fi
 
@@ -249,7 +249,7 @@ function sqlSelectFromTable() {
         index=$(getColumnIndex $1 $col)
         # check if the column exists
         if [[ $index -eq -1 ]]; then
-            print "Column $col does not exist in the table" "white" "red"
+            print "Error: Column $col does not exist in the table" "white" "red"
             return
         else
             # actual index in the table file equals (index/4)+1
