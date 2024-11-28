@@ -42,7 +42,7 @@ function parseQuery() {
         columns_array=()
         for column in "${columns[@]}"; do
             # remove spaces
-            column=$(echo $column | tr -d ' ')
+            column=$(echo $column | xargs)
             columns_array+=("$column")
         done
         sqlSelectFromTable $table columns_array "$conditions"
@@ -66,7 +66,7 @@ function parseQuery() {
         values=()
         for set in "${set_array[@]}"; do
             # remove spaces
-            set=$(echo $set | tr -d ' ')
+            set=$(echo $set | xargs)
             IFS='=' read -r -a set_array <<< "$set"
             columns+=("${set_array[0]}")
             values+=("${set_array[1]}")
@@ -167,7 +167,7 @@ function parseQuery() {
 
 # create table query
 # parseQuery "use database iti"
-# parseQuery "            select * from emp"
+# parseQuery "select id from emp where name = 'lol lol';"
 # parseQuery "create table std ( id int primary key, name varchar ( 40 ) not null , age int not null, email varchar (100) unique);  "
 
 # parseQuery "create table emp ( id int primary key, name varchar (30) );"

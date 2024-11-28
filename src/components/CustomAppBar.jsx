@@ -9,6 +9,7 @@ import { useCode } from "../contexts/CodeContext";
 
 
 export default function CustomAppBar() {
+  const ipcRenderer = window.ipcRenderer;
   const { code } = useCode();
   return (
     <AppBar
@@ -26,7 +27,12 @@ export default function CustomAppBar() {
         </Typography>
       </Toolbar>
       <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      <Button variant="contained" color="success" sx={{ ml: 2 }} onClick={() => console.log(code)}>
+      <Button 
+        variant="contained" 
+        color="success" 
+        sx={{ ml: 2 }} 
+        // onClick={() => ipcRenderer.send()}
+      >
         Run Query
       </Button>
         <ModeSwitch />

@@ -173,3 +173,19 @@ ipcMain.on('get-tables', (event, dbName) => {
     event.sender.send('tables', tableList);
   });
 })
+
+ipcMain.on('query', (event, dbName, query) => {
+  // execute the bash script inside scripts folder
+  console.log(`${script_path}`);
+  // cd into the scripts folder and execute the dbms.sh script
+  exec(`cd ${script_path}/${dbName}&&./dbms.sh --sql "${query}"`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    // split the output by new line
+    const result = stdout.split('\n');
+    console.log("result",result)
+  });
+})

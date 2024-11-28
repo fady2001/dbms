@@ -402,8 +402,8 @@ function evaluateConditions() {
         # Capture operator from cond either = or != or > or < or >= or <=
         operator=$(echo $cond | grep -oP '([<>]=?|!?=)')
         # Capture the field name from cond
-        cond_LHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\1/" | tr -d ' ')
-        cond_RHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\2/" | tr -d ' ')
+        cond_LHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\1/" | xargs)
+        cond_RHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\2/" | xargs)
         # Get the index of the field name in the fields array
         index=$(getColumnIndex $1 $cond_LHS)
         #actual index in the table file equals (index/4)+1
@@ -423,8 +423,8 @@ function evaluateConditions() {
         # Capture operator from cond either = or !> or > or < or >= or <=
         operator=$(echo $cond | grep -oP '([<>]=?|!?=)')
         # Capture the field name from cond
-        cond_LHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\1/" | tr -d ' ')
-        cond_RHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\2/" | tr -d ' ')        
+        cond_LHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\1/" | xargs)
+        cond_RHS=$(echo $cond | sed -r "s/(.*)${operator}(.*)/\2/" | xargs)        
         # Get the index of the field name in the fields array
         index=$(getColumnIndex $1 $cond_LHS)
         #actual index in the table file equals (index/4)+1

@@ -167,10 +167,10 @@ function updateTable() {
 
     # remove leading and trailing whitespaces
     for i in ${!columns[@]}; do
-        columns[$i]=$(echo ${columns[$i]} | tr -d ' ')
+        columns[$i]=$(echo ${columns[$i]} | xargs)
     done
     for i in ${!values[@]}; do
-        values[$i]=$(echo ${values[$i]} | tr -d ' ')
+        values[$i]=$(echo ${values[$i]} | xargs)
     done
     
 
