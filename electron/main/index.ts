@@ -137,12 +137,14 @@ ipcMain.on('get-databases', (event) => {
     console.log(`stdout: ${stdout}`);
     // split the output by new line
     const dbs = stdout.split('\n');
-    // split the output by space and trim the spaces
-    const dbList = dbs.map(db => db.split(' ').map(db => db.trim()));
-    // remove the last empty element
-    dbList.pop();
-    // send the dbList to the renderer
-    console.log(dbList);
-    event.reply('databases', dbList);
+    console.log("db",dbs)
+    // remove the last empty string
+    dbs.pop();
+    // trim then split by tab
+    const dbList = dbs.map(db => db.trim().split('\t'));
+    console.log("dbList",dbList)
+    // get array from second element of each array
+    const dbNames = dbList.map(db => db[1]);
+    event.sender.send('databases', dbNames);
   });
 })

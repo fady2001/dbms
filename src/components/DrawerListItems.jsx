@@ -16,6 +16,7 @@ const items1 = ['DB1', 'DB2', 'DB3', 'DB4'];
 const tables = ['Table1', 'Table2', 'Table3', 'Table4'];
 
 export default function DrawerListItems() {
+  const [databases, setDatabases] = React.useState([]);
   const { mode } = useThemeMode();
   const [openIndex, setOpenIndex] = React.useState(null);
 
@@ -23,17 +24,20 @@ export default function DrawerListItems() {
     setOpenIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
-  const ipcRenderer = window.ipcRenderer;
-  ipcRenderer.send("get-databases");
+  React.useMemo(() => {
+    const ipcRenderer = window.ipcRenderer;
+    ipcRenderer.send("get-databases");
 
-  ipcRenderer.on("databases", (event, args) => {
-    console.log(args);
-  });
+    ipcRenderer.on("databases", (event, args) => {
+      console.log(args);
+      setDatabases(args);
+    });
+  }, []);
 
   return (
     <div>
       <List>
-        {items1.map((text, index) => (
+        {databases.map((text, index) => (
           <div key={text}>
             <ListItem disablePadding sx={{ display: 'block' }}>
               <ListItemButton
