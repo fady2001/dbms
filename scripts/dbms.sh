@@ -39,8 +39,6 @@ run_menu_mode() {
                         read -p "Enter the database name: " dbName
                         connectToDatabase $dbName
                         connected=$?
-                        CURRENT_DB_NAME=$dbName
-                        CURRENT_DB_PATH=$PWD
                         read -n 1 -s -r -p "Press any key to continue . . ."
                         clear
                         break

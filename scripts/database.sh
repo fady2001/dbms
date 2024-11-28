@@ -91,6 +91,8 @@ function connectToDatabase() {
     # check if the database exists    
     if [[ $(dirExists $1) -eq 1 ]]; then
         cd $1
+        CURRENT_DB_PATH=$PWD
+        CURRENT_DB_NAME=$1
         print "Connected to $1" "white" "green"
         return 0
     else

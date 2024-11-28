@@ -433,7 +433,7 @@ function evaluateConditions() {
         # echo field: ${fields[$index]} operator: $operator cond_RHS: $cond_RHS
         # echo op: $operator fld: ${#fields[$index]} cond: ${#cond_RHS} 
         result=$(evaluate_operator "$operator" "${fields[$index]}" "$cond_RHS")
-        print "result: $result" "white" "green"
+        # print "result: $result" "white" "green"
         if [[ $result -eq -1 ]]; then
             echo -1
             return
