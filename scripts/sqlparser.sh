@@ -166,8 +166,8 @@ function parseQuery() {
 }
 
 # create table query
-parseQuery "use database iti"
-parseQuery "            select id from emp"
+# parseQuery "use database iti"
+# parseQuery "            select * from emp"
 # parseQuery "create table std ( id int primary key, name varchar ( 40 ) not null , age int not null, email varchar (100) unique);  "
 
 # parseQuery "create table emp ( id int primary key, name varchar (30) );"

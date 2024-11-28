@@ -242,7 +242,7 @@ function sqlSelectFromTable() {
 
     if [[ ${cols[0]} == "*" ]]; then
         # set columns array to all columns in the table
-        IFS=' ' read -r -a columns <<< "$(getColumnNames $1)"    
+        IFS=' ' read -r -a cols <<< "$(getColumnNames $1)"    
     fi
     # get column indecies in table file
     declare -a indecies
@@ -260,7 +260,7 @@ function sqlSelectFromTable() {
     done
 
     output=""
-    for column in ${columns[@]}; do
+    for column in ${cols[@]}; do
         output="$output$column\t"
     done
     # remove trailing tab
