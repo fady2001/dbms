@@ -1,5 +1,5 @@
-source ./sqlhandler.sh
-source ./database.sh
+# ...existing code...
+# ...existing code...
 function parseQuery() {
     # disable globbing (metacharacters)
     # because the query may contain special characters like "*"
@@ -183,4 +183,4 @@ function parseQuery() {
 
 # parseQuery "
 #     delete from emp where id = 1;
-# " 
+# "

@@ -1,6 +1,4 @@
 #!/usr/bin/bash
-source ./helper.sh
-source ./metadata.sh
 ################################################################################
 #
 # This file contains scripts to deal with tables using sql commands

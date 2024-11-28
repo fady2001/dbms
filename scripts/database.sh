@@ -6,10 +6,6 @@
 #
 ################################################################################
 
-# Load the helper functions
-source ./helper.sh
-source ./metadata.sh
-
 # function that create a new database
 function createDatabase() {
     # check if the database name is alphanumeric

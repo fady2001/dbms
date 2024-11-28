@@ -11,8 +11,8 @@
 # export CURRENT_DB_NAME="iti"
 
 # Load the helper functions
-source ./helper.sh
-source ./metadata.sh
+# source ./helper.sh
+# source ./metadata.sh
 
 # function that create a new Table
 # $1: table name

@@ -4,10 +4,6 @@
 # This file contains scripts for interacting with (electron) GUI
 ##################################################################
 
-source ./scripts/database.sh
-source ./scripts/helper.sh
-source ./scripts/table.sh
-
 if [[ $1 == "--listDatabases" ]]; then
     listDatabases
 elif [[ $1 == "--connectDatabase" ]]; then

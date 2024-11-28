@@ -10,6 +10,9 @@
 source ./database.sh
 source ./table.sh
 source ./sqlparser.sh
+source ./sqlhandler.sh
+source ./helper.sh
+source ./metadata.sh
 
 # flag to check if the database is connected
 connected=1
