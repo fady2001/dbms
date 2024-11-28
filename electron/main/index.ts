@@ -148,3 +148,28 @@ ipcMain.on('get-databases', (event) => {
     event.sender.send('databases', dbNames);
   });
 })
+
+// create a new ipcMain that will handle the get-tables event
+// it takes the event and the database name as arguments
+ipcMain.on('get-tables', (event, dbName) => {
+  // execute the bash script inside scripts folder
+  console.log(`${script_path}`);
+  // cd into the scripts folder and execute the dbms.sh script
+  exec(`cd ${script_path}/${dbName}&&ls`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    // split the output by new line
+    const tables = stdout.split('\n');
+    console.log("tables",tables)
+    // remove the last empty string
+    tables.pop();
+    // trim then split by tab
+    const tableList = tables.map(table => table.trim());
+    console.log("tableList",tableList)
+    // get array from second element of each array
+    event.sender.send('tables', tableList);
+  });
+})

@@ -16,7 +16,10 @@ const items1 = ['DB1', 'DB2', 'DB3', 'DB4'];
 const tables = ['Table1', 'Table2', 'Table3', 'Table4'];
 
 export default function DrawerListItems() {
+  const ipcRenderer = window.ipcRenderer;
+
   const [databases, setDatabases] = React.useState([]);
+  const [tables, setTables] = React.useState([]);
   const { mode } = useThemeMode();
   const [openIndex, setOpenIndex] = React.useState(null);
 
@@ -24,8 +27,25 @@ export default function DrawerListItems() {
     setOpenIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
+  // each time a list item is clicked, the database name is sent to the main process
+  // to get the tables of that database
+  React.useEffect(() => {
+    if (openIndex !== null) {
+      ipcRenderer.send("get-tables", databases[openIndex]);
+
+      ipcRenderer.on("tables", (event, args) => {
+        console.log(args);
+        setTables(args);
+      });
+    }
+    // cleanup
+    return () => {
+      ipcRenderer.removeAllListeners("tables");
+    };
+  }, [openIndex]);
+
+
   React.useMemo(() => {
-    const ipcRenderer = window.ipcRenderer;
     ipcRenderer.send("get-databases");
 
     ipcRenderer.on("databases", (event, args) => {
