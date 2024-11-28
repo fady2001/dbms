@@ -36,26 +36,32 @@ function parseQuery() {
         columns=$(echo $1 | grep -ioP '(?<=select ).*(?= from)')
         table=$(echo $1 | grep -ioP '(?<=from )[a-zA-Z0-9_]+(?= where|$)')
         conditions=$(echo $1 | grep -ioP '(?<=where ).*(?=[;$]?)')
-        echo $columns
-        echo $table
-        echo $conditions
+
+        # split the columns into an array
+        IFS=',' read -r -a columns <<< "$columns"
+        columns_array=()
+        for column in "${columns[@]}"; do
+            # remove spaces
+            column=$(echo $column | tr -d ' ')
+            columns_array+=("$column")
+        done
+        sqlSelectFromTable $table columns_array "$conditions"
     elif [[ $1 =~ ^[[:space:]]*[dD][eE][lL][eE][tT][eE] ]]; then
         table=$(echo $1 | grep -ioP '(?<=from )[a-zA-Z0-9_]+(?= where|$)')
         conditions=$(echo $1 | grep -ioP '(?<=where ).*(?=[;$]?)')
-        echo $table
-        echo $conditions
+        sqlDeleteFromTable $table "$conditions"
         return
     elif [[ $1 =~ ^[[:space:]]*[uU][pP][dD][aA][tT][eE] ]]; then
-        echo "Update query"
+        # echo "Update query"
         table=$(echo $1 | grep -ioP '(?<=update )[a-zA-Z0-9_]+(?= set)')
         set_clause=$(echo $1 | grep -ioP '(?<=set ).*(?= where)')
         conditions=$(echo $1 | grep -ioP '(?<=where )[^;]*(?=[$;]?)')
-        echo $table
-        echo $set_clause
-        echo $conditions
+        # echo $table
+        # echo $set_clause
+        # echo $conditions
         # split the set clause into columns and values
         IFS=',' read -r -a set_array <<< "$set_clause"
-        echo ${set_array[@]}
+        # echo ${set_array[@]}
         columns=()
         values=()
         for set in "${set_array[@]}"; do
@@ -68,7 +74,7 @@ function parseQuery() {
         sqlUpdateTable $table columns values "$conditions"
         return
     elif [[ $1 =~ ^[[:space:]]*[iI][nN][sS][eE][rR][tT] ]]; then
-        echo "Insert query"
+        # echo "Insert query"
         table=$(echo $1 | grep -ioP '(?<=into )[a-zA-Z0-9_]+(?= \(| values)')
         columns=$(echo $1 | grep -ioP '(?<=\().*(?=\) values)')
         values=$(echo $1 | grep -ioP '(?<=values \().*(?=\))')
@@ -82,14 +88,14 @@ function parseQuery() {
         sqlinsertIntoTable $table columns values
         return
     elif [[ $1 =~ ^[[:space:]]*[dD][rR][oO][pP][[:space:]]+[tT][aA][bB][lL][eE] ]]; then
-        echo "Drop query"
+        # echo "Drop query"
         table=$(echo $1 | grep -ioP '(?<=table )[a-zA-Z0-9_]+(?=[;$]?)')
         dropTable $table
         return
     elif [[ $1 =~ ^[[:space:]]*[cC][rR][eE][aA][tT][eE][[:space:]]+[tT][aA][bB][lL][eE] ]]; then
         # Extract the table name (after CREATE TABLE and before the parentheses)
         tableName=$(echo $1 | grep -ioP '(?<=create table )[a-zA-Z0-9_]+(?=\s*\()')
-        echo "Table Name: $tableName"
+        # echo "Table Name: $tableName"
 
         # Extract column definitions (everything inside the parentheses after CREATE TABLE)
         columnDefs=$(echo $1 | grep -oP '(?<=\().*(?=\))')
@@ -175,5 +181,5 @@ function parseQuery() {
 # # "
 
 # parseQuery "
-#     update emp set name = adel where id >= 1
+#     delete from emp where id = 1;
 # " 

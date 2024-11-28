@@ -209,7 +209,7 @@ function updateTable() {
 
     # loop over the table file
     while IFS= read -r line; do
-        eval_cond=$(evaluateConditions $1 $line $conditions)
+        eval_cond=$(evaluateConditions $1 $line "$conditions")
         if [[ $eval_cond -eq 1 ]]; then
             # split the line by delimiter
             IFS=':' read -r -a fields <<< $line
@@ -250,25 +250,37 @@ function updateTable() {
 
 
 # function that select from a Table
- function selectFromTable() {
+# $1: table name
+function selectFromTable() {
+    set -f
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
         print "Table does not exist" "white" "red"
         return
     fi
-    read -p "Enter The Columns You Would Like To Select Seperated by , (* for all): " -a columns
-    read -p "Enter Condition (e.g., age=35): " condition
-    # Columns
-    # Set the field separator to a comma
+
+    declare -a columns
+
+    # get column names that user wants to select from separated by comma
     IFS=','
-    i=0
-    set -f
-    # Loop through each column name
+    read -p "Enter the columns you want to select separated by comma: " -a columns
+    # get conditions
+    read -p "Enter the conditions like sql (age=30 and/or id=10): " conditions
+    
+    # check if columns is *
+    if [[ ${columns[0]} == "*" ]]; then
+        # set columns array to all columns in the table
+        IFS=' ' read -r -a columns <<< "$(getColumnNames $1)"    
+    fi
+    set +f
+    # remove leading and trailing whitespaces
+    for i in ${!columns[@]}; do
+        columns[$i]=$(echo ${columns[$i]} | tr -d ' ')
+    done
+
+    # get column indecies in table file
     declare -a indecies
-    if [[ $columns != "*" ]]; then
     for column in ${columns[@]}; do
-        # trim leading and trailing whitespaces
-        column=$(echo $column | tr -d ' ')
         # get column index
         index=$(getColumnIndex $1 $column)
         # check if the column exists
@@ -280,97 +292,62 @@ function updateTable() {
             indecies+=($((index/4+1)))
         fi
     done
-    fi
-    # Reset IFS to default
-    unset IFS
-    
-    indecies=$(IFS=,; echo "${indecies[*]}") # Join values with a comma
-    
-    # Extracting 
-    # Extract the column name (everything before the first operator)
-    column_wh=$(echo "$condition" | grep -oE '^[a-zA-Z_][a-zA-Z0-9_]*')
 
-    # Extract the operator 
-    op=$(echo "$condition" | grep -oE '(!=|<=|>=|=|<|>)')
+    # create a variable to store the selected columns names separated by tab to print them
+    output=""
+    for column in ${columns[@]}; do
+        output="$output$column\t"
+    done
+    # remove trailing tab
+    output=${output%?}
+    # add a new line
+    output="$output"\n
 
-    # Extract the value (everything after the operator)
-    val=$(echo "$condition" | sed -E "s/^[a-zA-Z_][a-zA-Z0-9_]*${op}//")
-
-    if [[ $op == "=" ]]; then
-    	op="=="
-    fi
-    # If there was a column select then we sent it to the fucntion to get it's index
-    # if not then we make it equal to "" 
-    if [[ ($column_wh == "") ]] ; then
-
-	if [[ $columns == "*" ]]; then
-    		sed -n 'p' $1
-
-    	else 
-    		awk -v ind="$indecies" 'BEGIN {FS=":"; split(ind, arr, "," );} {for (i in arr)
-    		{ printf "%s ",  $arr[i]} }' $1
-    	fi
-    else
-    	temp=$(getColumnIndex $1 $column_wh);
-    	column_wh=$((temp/4+1));
-    	if [[ $columns == "*" ]]; then
-    		if [[ $'$column_wh$op$val' ]]; then
-	    		NR=($(awk 'BEGIN{FS=":"}{if ($'$column_wh$op$val')print NR}' $1))
-	    		if [[ $NR != "" ]] ; then
-	    			f="${NR[0]}"
-				l="${NR[-1]}"
-		    		sed -n "${f},${l}p" $1
-		    	fi
-		fi
-	else 
-		if [[ $'$column_wh$op$val' ]]; then
-	    		awk -v ind="$indecies" 'BEGIN{FS=":"; split(ind, arr, "," );} {
-	    		if ($'$column_wh$op$val'){
-	    		for (i in arr){ 
-	    		printf "%s ",  $arr[i]} 
-	    		}
-	    		}' $1
-		fi
-	fi
-    fi
-    set +f
-    
- }
+    # loop over the table file
+    while IFS= read -r line; do
+        eval_cond=$(evaluateConditions $1 $line $conditions)
+        if [[ $eval_cond -eq 1 ]]; then
+            # print the selected columns names and values separated by tab
+            IFS=':' read -r -a fields <<< $line
+            # append the selected columns values to the output variable
+            for i in ${indecies[@]}; do
+                output="$output${fields[$i-1]}\t"
+            done
+            # remove trailing tab
+            output=${output%?}
+            output="$output"\n
+        elif [[ $eval_cond -eq -1 ]]; then
+            print "Invalid operator" "white" "red"
+            return
+        fi
+    done < $1
+    echo -e $output
+}
 
 
 # # function that delete from a Table
- function deleteFromTable() {
-    
-    #read -p "Enter the Table name: "  table_name
-    read -p "Enter Condition (e.g., age=35): " condition
-
-    # Extracting
-    # Extract the column name (everything before the first operator)
-    column_wh=$(echo "$condition" | grep -oE '^[a-zA-Z_][a-zA-Z0-9_]*')
-
-    # Extract the operator 
-    op=$(echo "$condition" | grep -oE '(!=|<=|>=|=|<|>)')
-
-    # Extract the value (everything after the operator)
-    val=$(echo "$condition" | sed -E "s/^[a-zA-Z_][a-zA-Z0-9_]*${op}//")
-    if [[ $op == "=" ]]; then
-    	op="=="
+#$1: table name
+function deleteFromTable() {
+    # check if table exists
+    if [[ $(fileExists $1) -eq 0 ]]; then
+        print "Table does not exist" "white" "red"
+        return
     fi
-    # If there was a column select then we sent it to the fucntion to get it's index
-    # if not then we make it equal to ""
 
-    if [[ ! ($column_wh == "") ]] ; then
-    	column_wh=$(getColumnIndex $table_name $column);
-    	#echo $column_wh	
-    	column_wh=($((column_wh/4+1)))
-    	if [[ $'$column_wh$op$val' ]]; then
-    		NR=($(awk 'BEGIN{FS=":"}{if ($'$column_wh$op$val')print NR}' $1))
-    		f="${NR[0]}"
-		l="${NR[-1]}"
-		sed -i "${f},${l}d" $1
-	fi
-    else {
-    	sed -i "d" $table_name
-    }
-    fi  
+    # get conditions
+    read -p "Enter the conditions like sql (age=30 and/or id=10): " conditions
+
+
+    # loop over the table file
+    while IFS= read -r line; do
+        eval_cond=$(evaluateConditions $1 $line $conditions)
+        if [[ $eval_cond -eq 1 ]]; then
+            # delete the line from the table file
+            sed -i "/$line/d" $1
+        elif [[ $eval_cond -eq -1 ]]; then
+            print "Invalid operator" "white" "red"
+            return
+        fi
+    done < $1
+    print "Records deleted successfully" "white" "green"
  }

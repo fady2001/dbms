@@ -89,7 +89,7 @@ run_menu_mode() {
                         ;;
                     "Delete From Table")
                         read -p "Enter the table name: " tableName
-                        deleteFromTable $tableName
+                        deleteFromTable "$tableName"
                         ;;
                     "Update Table")
                         read -p "Enter the table name: " tableName

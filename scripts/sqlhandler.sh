@@ -201,3 +201,85 @@ function sqlUpdateTable() {
         print "Table updated successfully" "white" "green"
     fi
 }
+
+# function that delete from a Table
+# $1: table name
+# $2: conditions
+function sqlDeleteFromTable() {
+    conds=$2
+    # check if table exists
+    if [[ $(fileExists $1) -eq 0 ]]; then
+        print "Table does not exist" "white" "red"
+        return
+    fi
+
+    # loop over the table file
+    while IFS= read -r line; do
+        eval_cond=$(evaluateConditions $1 "$line" "$conds")
+        if [[ $eval_cond -eq 1 ]]; then
+            # delete the line from the table file
+            sed -i "/$line/d" $1
+        elif [[ $eval_cond -eq -1 ]]; then
+            print "Invalid operator" "white" "red"
+            return
+        fi
+    done < $1
+    print "Record deleted successfully" "white" "green"
+}
+
+# function that select from a Table
+# $1: table name
+# $2: columns to select
+# $3: conditions
+function sqlSelectFromTable() {
+    local -n cols=$2
+    conds=$3
+    # check if table exists
+    if [[ $(fileExists $1) -eq 0 ]]; then
+        print "Table does not exist" "white" "red"
+        return
+    fi
+
+    # get column indecies in table file
+    declare -a indecies
+    for col in ${cols[@]}; do
+        # get column index
+        index=$(getColumnIndex $1 $col)
+        # check if the column exists
+        if [[ $index -eq -1 ]]; then
+            print "Column $col does not exist in the table" "white" "red"
+            return
+        else
+            # actual index in the table file equals (index/4)+1
+            indecies+=($((index/4+1)))
+        fi
+    done
+
+    output=""
+    for column in ${columns[@]}; do
+        output="$output$column\t"
+    done
+    # remove trailing tab
+    output=${output%?}
+    # add a new line
+    output="$output"\n
+
+    # loop over the table file
+    while IFS= read -r line; do
+        eval_cond=$(evaluateConditions $1 "$line" "$conds")
+        if [[ $eval_cond -eq 1 ]]; then
+            # split the line by delimiter
+            IFS=':' read -r -a fields <<< $line
+            for i in ${indecies[@]}; do
+                output="$output${fields[$i-1]}\t"
+            done
+            # remove trailing tab
+            output=${output%?}
+            output="$output"\n
+        elif [[ $eval_cond -eq -1 ]]; then
+            print "Invalid operator" "white" "red"
+            return
+        fi
+    done < $1
+    echo -e $output
+}
