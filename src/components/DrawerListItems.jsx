@@ -11,11 +11,13 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import darkDB from '../assets/darkDB.png';
 import lightDB from '../assets/lightDB.png';
 import { useThemeMode } from '../contexts/ThemeToggle';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 const items1 = ['DB1', 'DB2', 'DB3', 'DB4'];
 const tables = ['Table1', 'Table2', 'Table3', 'Table4'];
 
 export default function DrawerListItems() {
+  const { openSnackbar } = useSnackbar();
   const ipcRenderer = window.ipcRenderer;
 
   const [databases, setDatabases] = React.useState([]);
@@ -35,14 +37,21 @@ export default function DrawerListItems() {
 
       ipcRenderer.on("tables", (event, args) => {
         console.log(args);
-        setTables(args);
+        if (args.err.match(/Error/)) {
+          openSnackbar(args.err, "error");
+          setTables([]);
+        }
+        else {
+          openSnackbar("Tables fetched successfully", "success");
+          setTables(args.tableNames);
+        }
       });
     }
     // cleanup
     return () => {
       ipcRenderer.removeAllListeners("tables");
     };
-  }, [openIndex]);
+  }, [openIndex, databases]);
 
 
   React.useMemo(() => {
@@ -50,7 +59,15 @@ export default function DrawerListItems() {
 
     ipcRenderer.on("databases", (event, args) => {
       console.log(args);
-      setDatabases(args);
+      // use Regex to match args.stderr and "Error" string
+      if (args.err.match(/Error/)) {
+        openSnackbar(args.err, "error");
+        return;
+      }
+      else {
+        setDatabases(args.dbNames);
+        openSnackbar(args.err, "success");
+      }
     });
   }, []);
 
