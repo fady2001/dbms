@@ -34,7 +34,7 @@ function parseQuery() {
     ###############################################################
     elif [[ $1 =~ ^[[:space:]]*[sS][eE][lL][eE][cC][tT] ]]; then
         columns=$(echo $1 | grep -ioP '(?<=select ).*(?= from)')
-        table=$(echo $1 | grep -ioP '(?<=from )[a-zA-Z0-9_]+(?= where|$)')
+        table=$(echo $1 | grep -ioP '(?<=from )[a-zA-Z0-9_]+(?= where|;|$)')
         conditions=$(echo $1 | grep -ioP '(?<=where ).*(?=[;$]?)')
 
         # split the columns into an array
@@ -166,7 +166,8 @@ function parseQuery() {
 }
 
 # create table query
-# parseQuery "use database iti"
+parseQuery "use database iti"
+parseQuery "            select id from emp"
 # parseQuery "create table std ( id int primary key, name varchar ( 40 ) not null , age int not null, email varchar (100) unique);  "
 
 # parseQuery "create table emp ( id int primary key, name varchar (30) );"

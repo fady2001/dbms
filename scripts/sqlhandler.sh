@@ -236,10 +236,14 @@ function sqlSelectFromTable() {
     conds=$3
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Table does not exist" "white" "red"
+        print "Table doese not exist" "white" "red"
         return
     fi
 
+    if [[ ${cols[0]} == "*" ]]; then
+        # set columns array to all columns in the table
+        IFS=' ' read -r -a columns <<< "$(getColumnNames $1)"    
+    fi
     # get column indecies in table file
     declare -a indecies
     for col in ${cols[@]}; do
