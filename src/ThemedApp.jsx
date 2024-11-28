@@ -1,12 +1,15 @@
 // ThemedApp.js
 import * as React from 'react';
 import App from './App';
-import { ThemeProviderWrapper } from './contexts/ThemeToggle'; // Adjust path if necessary
+import { ThemeProviderWrapper } from './contexts/ThemeToggle'; 
+import { CodeProvider } from './contexts/CodeContext';
 
 export default function ThemedApp() {
   return (
-    <ThemeProviderWrapper>
-      <App />
-    </ThemeProviderWrapper>
+    <CodeProvider>
+      <ThemeProviderWrapper>
+        <App />
+      </ThemeProviderWrapper>
+    </CodeProvider>
   );
 }

@@ -5,9 +5,11 @@ import { AppBar } from "./styles";
 import ModeSwitch from "./ModeSwitch";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import { useCode } from "../contexts/CodeContext";
 
 
 export default function CustomAppBar() {
+  const { code } = useCode();
   return (
     <AppBar
       position="fixed"
@@ -24,7 +26,7 @@ export default function CustomAppBar() {
         </Typography>
       </Toolbar>
       <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      <Button variant="contained" color="success" sx={{ ml: 2 }} onClick={() => console.log('Run Query')}>
+      <Button variant="contained" color="success" sx={{ ml: 2 }} onClick={() => console.log(code)}>
         Run Query
       </Button>
         <ModeSwitch />
