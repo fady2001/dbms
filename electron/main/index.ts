@@ -209,4 +209,28 @@ ipcMain.on('get-columns', (event, dbName, tableName) => {
   });
 })
 
-
+// create a new ipcMain that handle sql query
+ipcMain.on('execute-query', (event, query) => {
+  // execute the bash script inside scripts folder
+  console.log(`${script_path}`);
+  // cd into the scripts folder and execute the dbms.sh script
+  exec(`cd ${script_path}/iti && ${script_path}/GUIinterface.sh --parseQuery "${query}"`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      event.sender.send('query-result', { result: [], err: "Error: No permissions" });
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    // split the output by new line
+    const result = stdout.split('\n');
+    console.log("result",result)
+    // remove the last empty string
+    result.pop();
+    // trim then split by tab
+    const resultList = result.map(row => row.trim().split('\t'));
+    console.log("resultList",resultList)
+    // get array from second element of each array
+    let err = stderr.replace(/\x1b\[[0-9;]*m/g, '');
+    event.sender.send('query-result', { result: resultList, err });
+  });
+})

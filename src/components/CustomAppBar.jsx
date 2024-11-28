@@ -9,8 +9,16 @@ import { useCode } from "../contexts/CodeContext";
 
 
 export default function CustomAppBar() {
-  const ipcRenderer = window.ipcRenderer;
+
   const { code } = useCode();
+  const ipcRenderer = window.ipcRenderer;
+  
+  const executeQuery = (query) => {
+    // remove any line starting with a comment
+    const cleanedQuery = query.split('\n').filter(line => !line.startsWith('--')).join('\n');
+    console.log(cleanedQuery);
+    ipcRenderer.send('execute-query', cleanedQuery);
+  }
   return (
     <AppBar
       position="fixed"
@@ -31,7 +39,7 @@ export default function CustomAppBar() {
         variant="contained" 
         color="success" 
         sx={{ ml: 2 }} 
-        // onClick={() => ipcRenderer.send()}
+        onClick={() => executeQuery(code)}
       >
         Run Query
       </Button>
