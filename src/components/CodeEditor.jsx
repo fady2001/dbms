@@ -5,15 +5,15 @@ import 'codemirror/theme/duotone-dark.css';  // Theme (optional)
 import 'codemirror/theme/duotone-light.css'
 import 'codemirror/mode/sql/sql';  // Import SQL mode
 import { useThemeMode } from '../contexts/ThemeToggle'; // Adjust path as necessary
+import { useCode } from '../contexts/CodeContext'; // Adjust path as necessary
 
 
 export default function CodeEditor() {
   const { mode } = useThemeMode();
-
-  const [code, setCode] = useState('-- Write your SQL code here');
+  const { code, updateCode } = useCode(); // Destructure code and updateCode from context
 
   const handleCodeChange = (editor, data, value) => {
-    setCode(value);
+    updateCode(value);
   };
 
   return (

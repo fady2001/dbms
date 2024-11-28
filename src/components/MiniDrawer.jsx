@@ -6,8 +6,6 @@ import CustomDrawer from "./CustomDrawer";
 import CodeEditor from "./CodeEditor";
 import { DrawerHeader } from "./styles";
 import DataGrid from "./DataGrid";
-import { DialogProvider } from "../contexts/DialogProvider";
-import DatabaseButtons from "./DatabaseButtons";
 
 export default function MiniDrawer() {
   return (
@@ -17,9 +15,6 @@ export default function MiniDrawer() {
       <CustomDrawer />
       <Box component="main" width="100%">
         <DrawerHeader />
-        <DialogProvider>
-          <DatabaseButtons />
-        </DialogProvider>
         <CodeEditor />
         <DataGrid />
       </Box>
