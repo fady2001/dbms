@@ -181,21 +181,32 @@ ipcMain.on('get-tables', (event, dbName) => {
   });
 })
 
-ipcMain.on('query', (event, dbName, query) => {
+// create a new ipcMain that will handle the get-columns event
+// it takes the event, the database name, and the table name as arguments
+ipcMain.on('get-columns', (event, dbName, tableName) => {
   // execute the bash script inside scripts folder
   console.log(`${script_path}`);
   // cd into the scripts folder and execute the dbms.sh script
-  exec(`cd ${script_path}/${dbName}&&./dbms.sh --sql "${query}"`, (error, stdout, stderr) => {
+  exec(`cd ${script_path}/${dbName} && ${script_path}/GUIinterface.sh --listColumns ${dbName} ${tableName}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
+      event.sender.send('columns', { columnNames: [], err: "Error: No permissions" });
       return;
     }
     console.log(`stdout: ${stdout}`);
     // split the output by new line
-    const result = stdout.split('\n');
-    console.log("result",result)
+    const columns = stdout.split('\n');
+    console.log("columns",columns)
+    // remove the last empty string
+    columns.pop();
+    // trim then split by tab
+    const columnList = columns.map(column => column.trim().split(' '));
+    console.log("columnList",columnList)
+    const columnNames = columnList[0];
+    // get array from second element of each array
+    let err = stderr.replace(/\x1b\[[0-9;]*m/g, '');
+    event.sender.send('columns', { columnNames, err });
   });
 })
-
 
 

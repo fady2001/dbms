@@ -375,11 +375,6 @@ function getColumnNames() {
     # Convert the space-separated string to an array
     IFS=' ' read -r -a column_names <<< "$column_names_str"
 
-    # Check if the array is empty and set to -1 if no columns were found
-    if [[ ${#column_names[@]} -eq 0 ]]; then
-        column_names=(-1)
-    fi
-
     # Print the array elements
     echo "${column_names[@]}"
 }
