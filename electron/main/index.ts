@@ -135,6 +135,14 @@ ipcMain.on('get-databases', (event) => {
       return;
     }
     console.log(`stdout: ${stdout}`);
-    event.sender.send('databases', stdout)
+    // split the output by new line
+    const dbs = stdout.split('\n');
+    // split the output by space and trim the spaces
+    const dbList = dbs.map(db => db.split(' ').map(db => db.trim()));
+    // remove the last empty element
+    dbList.pop();
+    // send the dbList to the renderer
+    console.log(dbList);
+    event.reply('databases', dbList);
   });
 })
