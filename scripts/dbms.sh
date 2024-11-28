@@ -131,6 +131,17 @@ if [[ $1 == "--menu" || -z $1 ]]; then
     run_menu_mode
 elif [[ $1 == "--sql" ]]; then
     run_sql_mode
+elif [[ $1 == "--run" ]]; then
+    parseQuery "$2"
+elif [[ $1 == "--help" ]]; then
+    echo "Usage: dbms.sh [OPTION] [SQL COMMAND]"
+    echo "Run a database management system"
+    echo ""
+    echo "Options:"
+    echo "  --menu  Run the database management system in menu mode"
+    echo "  --sql   Run the database management system in SQL mode"
+    echo "  --run   Run a specific SQL command"
+    echo "  --help  Display this help message"
 else
     echo "Invalid option. Use --menu or --sql."
 fi
