@@ -133,6 +133,8 @@ elif [[ $1 == "--sql" ]]; then
     run_sql_mode
 elif [[ $1 == "--run" ]]; then
     parseQuery "$2"
+elif [[ $1 == "--list" ]]; then
+    listDatabases
 elif [[ $1 == "--help" ]]; then
     echo "Usage: dbms.sh [OPTION] [SQL COMMAND]"
     echo "Run a database management system"
@@ -141,6 +143,7 @@ elif [[ $1 == "--help" ]]; then
     echo "  --menu  Run the database management system in menu mode"
     echo "  --sql   Run the database management system in SQL mode"
     echo "  --run   Run a specific SQL command"
+    echo "  --list  List all databases"
     echo "  --help  Display this help message"
 else
     echo "Invalid option. Use --menu or --sql."

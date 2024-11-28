@@ -6,7 +6,6 @@ import CustomDrawer from "./CustomDrawer";
 import CodeEditor from "./CodeEditor";
 import { DrawerHeader } from "./styles";
 import DataGrid from "./DataGrid";
-import { DialogProvider } from "../contexts/DialogProvider";
 
 export default function MiniDrawer() {
   return (
