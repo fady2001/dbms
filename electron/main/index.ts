@@ -128,7 +128,8 @@ ipcMain.handle('open-win', (_, arg) => {
 ipcMain.on('get-databases', (event) => {
   // execute the bash script inside scripts folder
   console.log(`${script_path}`);
-  exec(`${script_path}/database.sh list`, (error, stdout, stderr) => {
+  // cd into the scripts folder and execute the dbms.sh script
+  exec(`cd ${script_path}&&./dbms.sh --list`, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
       return;
