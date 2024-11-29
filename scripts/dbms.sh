@@ -27,84 +27,238 @@ export CURRENT_DB_NAME=""
 # function for alter table
 # FILE: table.sh
 
-# Function to alter a table
-alterTable() {
-    clear
-    local tableName=$1
-    if [[ -z $tableName ]]; then
-        echo "Table name cannot be empty."
-        return 1
-    fi
+# # Function to alter a table
+# alterTable() {
+#     clear
+#     local tableName=$1
+#     if [[ -z $tableName ]]; then
+#         print "Table name cannot be empty." "white" "red"
+#         return 1
+#     fi
 
-    if [[ ! -f "$CURRENT_DB_PATH/$tableName" ]]; then
-        echo "Table '$tableName' does not exist."
-        return 1
-    fi
+#     if [[ ! -f "$CURRENT_DB_PATH/$tableName" ]]; then
+#         print "Table '$tableName' does not exist." "white" "red"
+#         return 1
+#     fi
 
-    echo "Select an option to alter the table:"
-    select option in "Add Column" "Drop Column" "Rename Column" "Change Data Type" "Change Data Length" "Add Constraint" "Remove Constraint" "Exit"; do
-        case $option in
-            "Add Column")
-                read -p "Enter column details (e.g., column_name data_type): " columnDetails
+#     echo "Select an option to alter the table:"
+#     select option in "Add Column" "Drop Column" "Rename Column" "Change Data Type" "Change Data Length" "Add Constraint" "Remove Constraint" "Exit"; do
+#         case $option in
+#             "Add Column")
+#                 read -p "Enter the column name: " columnName
+#                 # check if the column name is alphanumeric
+#                 if [[ $(isAlphaNumeric $columnName) -eq 0 ]]; then
+#                     print "Error: Column name should be alphanumeric" "white" "red"
+#                     return
+#                 fi
+
+#                 # check if the column already exists
+#                 if [[ $(getColumnIndex $tableName $columnName) -ne -1 ]]; then
+#                     print "Error: Column already exists" "white" "red"
+#                     return
+#                 fi
                 
-                # Add logic to add the column to the table
-                echo "Adding column '$columnName' of type '$columnType' to table '$tableName'."
-                # Example: echo "$columnName $columnType" >> "$CURRENT_DB_PATH/$tableName"
-                ;;
-            "Drop Column")
-                read -p "Enter the column name to drop: " columnName
-                # Add logic to drop the column from the table
-                echo "Dropping column '$columnName' from table '$tableName'."
-                # Example: sed -i "/$columnName/d" "$CURRENT_DB_PATH/$tableName"
-                ;;
-            "Rename Column")
-                read -p "Enter the current column name: " currentColumnName
-                read -p "Enter the new column name: " newColumnName
-                # Add logic to rename the column in the table
-                echo "Renaming column '$currentColumnName' to '$newColumnName' in table '$tableName'."
-                # Example: sed -i "s/$currentColumnName/$newColumnName/g" "$CURRENT_DB_PATH/$tableName"
-                ;;
-            "Change Data Type")
-                read -p "Enter the column name: " columnName
-                read -p "Enter the new data type: " newDataType
-                # Add logic to change the data type of the column
-                echo "Changing data type of column '$columnName' to '$newDataType' in table '$tableName'."
-                # Example: sed -i "s/\($columnName \)[^ ]*/\1$newDataType/" "$CURRENT_DB_PATH/$tableName"
-                ;;
-            "Change Data Length")
-                read -p "Enter the column name: " columnName
-                read -p "Enter the new data length: " newDataLength
-                # Add logic to change the data length of the column
-                echo "Changing data length of column '$columnName' to '$newDataLength' in table '$tableName'."
-                # Example: sed -i "s/\($columnName [^ ]* \)[^ ]*/\1$newDataLength/" "$CURRENT_DB_PATH/$tableName"
-                ;;
-            "Add Constraint")
-                read -p "Enter the column name: " columnName
-                read -p "Enter the constraint (e.g., NOT NULL, UNIQUE): " constraint
-                # Add logic to add the constraint to the column
-                echo "Adding constraint '$constraint' to column '$columnName' in table '$tableName'."
-                # Example: sed -i "s/\($columnName [^ ]* [^ ]* \)/\1$constraint /" "$CURRENT_DB_PATH/$tableName"
-                ;;
-            "Remove Constraint")
-                read -p "Enter the column name: " columnName
-                read -p "Enter the constraint to remove (e.g., NOT NULL, UNIQUE): " constraint
-                # Add logic to remove the constraint from the column
-                echo "Removing constraint '$constraint' from column '$columnName' in table '$tableName'."
-                # Example: sed -i "s/\($columnName [^ ]* [^ ]* \)$constraint /\1/" "$CURRENT_DB_PATH/$tableName"
-                ;;
-            "Exit")
-                print "Are you sure you want to exit? (y/n)" "black" "yellow"
-                read -n 1 -r -s -p "" REPLY
-                if [[ $REPLY =~ ^[Yy]$ ]]; then
-                    break
-                fi
-                ;;
-            *)
-                echo "Invalid option."
-                ;;
-        esac
-    done
-}
+#                 read -p "Enter the column type: " columnType
+#                 if [[ ! $columnType =~ ^([iI][nN][tT]|[vV][aA][rR][cC][hH][aA][rR])$ ]]; then
+#                     print "Error: type is not supported" "white" "red"
+#                     return
+#                 fi
+                
+#                 read -p "Enter the column length: " columnLength
+#                 if [[ $(isNumber $columnLength) -eq 0 || $columnLength -eq 0 || $columnLength =~ ^- ]]; then
+#                     print "Error: unvalid column length" "white" "red"
+#                     return
+#                 fi
+                
+#                 read -p "Enter the column constraint primary key or not null or unique: " columnConstraint
+#                 # handling the constraints
+#                 constraint=""
+#                 # handling primary key constraint
+#                 if [[ $columnConstraint =~ [pP][rR][iI][mM][aA][rR][yY] ]]; then
+#                     constraint+='y'
+#                 else
+#                     constraint+='n'
+#                 fi
+#                 # handling not null constraint
+#                 if [[ $columnConstraint =~ [nN][oO][tT][[:space:]]+[nN][uU][lL][lL] ]]; then 
+#                     constraint+='y'
+#                 else
+#                     constraint+='n'
+#                 fi
+#                 # handling unique constraint
+#                 if [[ $columnConstraint =~ [uU][nN][iI][qQ][uU][eE] ]]; then
+#                     constraint+='y'
+#                 else
+#                     constraint+='n'
+#                 fi
+#                 pk=$(getPrimaryKey $tableName)
+#                 if [[ $pk -ne -1 && ${5:0:1} == "y" ]]; then
+#                     print "Error: column $pk is the primary key for $tableName table" "white" "red"
+#                     return
+#                 fi
+                
+#                 read -p "Enter default value if exist: " default
+#                 if [[ ${5:1:1} == "y" && -z $default ]]; then
+#                     print "Error: need a default value" "white" "red"
+#                     return
+#                 fi
+
+#                 if [[ ${5:2:1} == "y" && ! -z $default ]]; then
+#                     print "warning: Unique column cannot have default value" "white" "yellow"
+#                     default=""
+#                 fi
+
+#                 if [[ ! -z $default && $(isNumber $default) -eq 0 && $columnType =~ ^([iI][nN][tT])$ ]];then
+#                     print "Error: default value and column don't have the same type" "white" "red"
+#                     return
+#                 fi
+
+#                 if [[ $(alterTableAddColumn $tableName $columnName $columnType $columnLength $constraint $default) -eq -1 ]]; then
+#                     return
+#                 fi
+#                 ;;
+#             "Drop Column")
+#                 read -p "Enter the column name: " columnName
+#                 # check if the column name is alphanumeric
+#                 if [[ $(isAlphaNumeric $columnName) -eq 0 ]]; then
+#                     print "Error: Column name should be alphanumeric" "white" "red"
+#                     return
+#                 fi
+
+#                 # check if the column already exists
+#                 if [[ ! $(getColumnIndex $tableName $columnName) -ne -1 ]]; then
+#                     print "Error: Column doesn't exist" "white" "red"
+#                     return
+#                 fi
+
+#                 if [[ $(deleteColumnFromMetadata $tableName $columnName) -eq -1 ]]; then
+#                     return
+#                 fi
+#                 print "Dropping column '$columnName' from table '$tableName'."
+#                 # Example: sed -i "/$columnName/d" "$CURRENT_DB_PATH/$tableName"
+#                 ;;
+#             "Rename Column")
+#                 read -p "Enter the current column name: " currentColumnName
+#                 # check if the column name is alphanumeric
+#                 if [[ $(isAlphaNumeric $currentColumnName) -eq 0 ]]; then
+#                     print "Error: currentColumnName name should be alphanumeric" "white" "red"
+#                     return
+#                 fi
+
+#                 # check if the column already exists
+#                 if [[ ! $(getColumnIndex $tableName $currentColumnName) -ne -1 ]]; then
+#                     print "Error: Column doesn't exist" "white" "red"
+#                     return
+#                 fi
+#                 read -p "Enter the new column name: " newColumnName
+#                 if [[ $(isAlphaNumeric $newColumnName) -eq 0 ]]; then
+#                     print "Error: newColumnName name should be alphanumeric" "white" "red"
+#                     return
+#                 fi
+#                 # Add logic to rename the column in the table
+#                 renameColumn $tableName $currentColumnName $newColumnName
+#                 ;;
+#             "Change Data Type")
+#                 read -p "Enter the column name: " columnName
+#                 # check if the column name is alphanumeric
+#                 if [[ $(isAlphaNumeric $columnName) -eq 0 ]]; then
+#                     print "Error: Column name should be alphanumeric" "white" "red"
+#                     return
+#                 fi
+
+#                 # check if the column already exists
+#                 if [[ ! $(getColumnIndex $tableName $columnName) -ne -1 ]]; then
+#                     print "Error: Column doesn't exist" "white" "red"
+#                     return
+#                 fi
+                
+#                 read -p "Enter the new data type: " newDataType
+#                 if [[ $(isStringColumn $tableName $columnName) -eq 0 && $newDataType =~ ^([iI][nN][tT])$ ]]; then
+#                     print "Error: column $columnName is a string column" "white" "red"
+#                     return
+#                 fi
+#                 # Add logic to change the data type of the column
+#                 modifyColumnType $tableName $columnName $newDataType
+#                 ;;
+#             "Change Data Length")
+#                 read -p "Enter the column name: " columnName
+#                 # check if the column name is alphanumeric
+#                 if [[ $(isAlphaNumeric $columnName) -eq 0 ]]; then
+#                     print "Error: Column name should be alphanumeric" "white" "red"
+#                     return
+#                 fi
+
+#                 # check if the column already exists
+#                 if [[ ! $(getColumnIndex $tableName $columnName) -ne -1 ]]; then
+#                     print "Error: Column doesn't exist" "white" "red"
+#                     return
+#                 fi
+                
+#                 read -p "Enter the column length: " columnLength
+#                 if [[ $(isNumber $columnLength) -eq 0 || $columnLength -eq 0 || $columnLength =~ ^- ]]; then
+#                     print "Error: unvalid column length" "white" "red"
+#                     return
+#                 fi
+#                 if [[ $(isLengthLessThanData $tableName $columnName $columnLength) -eq 0 ]]; then
+#                     print "Error: column length is less than the data" "white" "red"
+#                     return
+#                 fi
+                
+#                 modifyColumnSize $tableName $columnName $columnLength
+#                 ;;
+#             "Add Constraint")
+#                 read -p "Enter the column name: " columnName
+#                 if [[ $(isAlphaNumeric $columnName) -eq 0 ]]; then
+#                     print "Error: Column name should be alphanumeric" "white" "red"
+#                     return
+#                 fi
+#                 read -p "Enter a constraint primary key or not null or unique: " columnConstraint
+#                 # handling primary key constraint
+#                 if [[ $columnConstraint =~ [pP][rR][iI][mM][aA][rR][yY] ]]; then
+#                     pk=$(getPrimaryKey $tableName)
+#                     if [[ $pk -ne -1  ]]; then
+#                         print "Error: column $pk is the primary key for $tableName table" "white" "red"
+#                         return
+#                     fi
+#                     $(modifyColumnConstraint $tableName $columnName "pk" "y")
+#                 fi
+#                 # handling not null constraint
+#                 if [[ $columnConstraint =~ [nN][oO][tT][[:space:]]+[nN][uU][lL][lL] ]]; then 
+#                     $(modifyColumnConstraint $tableName $columnName "null" "y")
+#                 fi
+#                 # handling unique constraint
+#                 if [[ $columnConstraint =~ [uU][nN][iI][qQ][uU][eE] ]]; then
+#                     $(modifyColumnConstraint $tableName $columnName "unique" "y")
+#                 fi
+#                 ;;
+#             "Remove Constraint")
+#                 read -p "remove the column constraint primary key or not null or unique: " columnConstraint
+#                 # handling primary key constraint
+#                 if [[ $columnConstraint =~ [pP][rR][iI][mM][aA][rR][yY] ]]; then
+#                     $(modifyColumnConstraint $tableName $columnName "pk" "n")
+#                 fi
+#                 # handling not null constraint
+#                 if [[ $columnConstraint =~ [nN][oO][tT][[:space:]]+[nN][uU][lL][lL] ]]; then 
+#                     $(modifyColumnConstraint $tableName $columnName "null" "n")
+#                 fi
+#                 # handling unique constraint
+#                 if [[ $columnConstraint =~ [uU][nN][iI][qQ][uU][eE] ]]; then
+#                     $(modifyColumnConstraint $tableName $columnName "unique" "n")
+#                 fi
+#                 ;;
+#             "Exit")
+#                 print "Are you sure you want to exit? (y/n)" "black" "yellow"
+#                 read -n 1 -r -s -p "" REPLY
+#                 if [[ $REPLY =~ ^[Yy]$ ]]; then
+#                     break
+#                 fi
+#                 ;;
+#             *)
+#                 echo "Invalid option."
+#                 ;;
+#         esac
+#     done
+# }
 
 # Function to run the menu mode
 run_menu_mode() {

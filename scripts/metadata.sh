@@ -457,6 +457,7 @@ function deleteColumnFromMetadata() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
         print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        echo -1
         return
     fi
 
@@ -477,7 +478,8 @@ function deleteColumnFromMetadata() {
             print $0
         }
     }
-    ' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    ' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > .tmp && mv .tmp "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    echo 1
     print "Column $2 dropped from metadata successfully." "white" "green"
 }
 
@@ -489,9 +491,9 @@ function deleteColumnFromMetadata() {
 # $5: column constraints
 function addColumnToMetadata() {
     # Check if the metadata file exists
-    if [[ ! -f "iti/.iti" ]]; then
+    if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
         print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
-        return
+        echo -1
     fi
 
     awk -v table_name="$1" -v column_name="$2" -v column_type="$3" -v column_size="$4" -v column_constraints="$5" '
@@ -502,8 +504,7 @@ function addColumnToMetadata() {
         }
         print $0
     }
-    print "Column $2 added to metadata successfully." "white" "green"
-    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    ' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > ".tmp" && mv .tmp "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
     print "Column $2 added to metadata successfully." "white" "green"
 }
 
@@ -530,7 +531,7 @@ function renameColumn() {
             }
         }
         print $0
-    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > .tmp && mv .tmp "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
     print "Column $2 renamed to $3 successfully." "white" "green"
 }
 
@@ -557,7 +558,7 @@ function modifyColumnType() {
             }
         }
         print $0
-    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > .tmp && mv .tmp "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
     print "Column $2 data type modified to $3 successfully." "white" "green"
 }
 
@@ -584,7 +585,7 @@ function modifyColumnSize() {
             }
         }
         print $0
-    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > .tmp && mv .tmp "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
     print "Column $2 size modified to $3 successfully." "white" "green"
 }
 
