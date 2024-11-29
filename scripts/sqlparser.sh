@@ -1,5 +1,11 @@
 # ...existing code...
 # ...existing code...
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source $SCRIPT_DIR/database.sh
+source $SCRIPT_DIR/helper.sh
+source $SCRIPT_DIR/metadata.sh
+source $SCRIPT_DIR/sqlhandler.sh
+source $SCRIPT_DIR/table.sh
 function parseQuery() {
     # disable globbing (metacharacters)
     # because the query may contain special characters like "*"
@@ -155,9 +161,95 @@ function parseQuery() {
         # echo "Column Sizes: ${#column_sizes[@]}"
         # echo "Column Constraints: ${#$column_constraints[@]}"
         sqlcreateTable $tableName column_names column_types column_sizes column_constraints
-        
-    elif [[ $1 =~ ^[[:space:]]*[cC][lL][eE][aA][rR] ]]; then
-        clear
+    elif [[ $1 =~ ^[[:space:]]*[aA][lL][tT][eE][rR][[:space:]]+[tT][aA][bB][lL][eE] ]]; then
+        # echo "Alter query"
+        table=$(echo $1 | grep -ioP '(?<=table )[a-zA-Z0-9_]+(?= add| drop| modify)')
+        action=$(echo $1 | grep -ioP '(add|drop|modify)')
+        # echo $table
+        # echo $action
+        if [[ $action =~ [aA][dD][dD] ]]; then
+            columnDef=$(echo $1 | grep -oP '(?<=add ).*(?=[;$]?)')
+            # echo $columnDef
+            # split over the space
+            IFS=' ' read -r -a column_names_dt <<< "$columnDef"
+            # push the column name to the column_names array
+            column_name="${column_names_dt[0]}"
+            # handling the data type
+            if [[ ${column_names_dt[1]} =~ [iI][nN][tT] ]]; then
+                column_type="int"
+                column_size="4"
+            elif [[ ${column_names_dt[1]} =~ [vV][aA][rR][cC][hH][aA][rR] ]]; then
+                column_type="varchar"
+                column_size=$(echo $columnDef | grep -oP '(?<=\().*(?=\))' | grep -oP '[0-9]+')
+            fi
+            # handling the constraints
+            constraint=""
+            # handling primary key constraint
+            if [[ $columnDef =~ [pP][rR][iI][mM][aA][rR][yY] ]]; then
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            # handling not null constraint
+            if [[ $columnDef =~ [nN][oO][tT][[:space:]]+[nN][uU][lL][lL] ]]; then 
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            # handling unique constraint
+            if [[ $columnDef =~ [uU][nN][iI][qQ][uU][eE] ]]; then
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            # handling default value
+            default=""
+            if [[ $columnDef =~ [dD][eE][fF][aA][uU][lL][tT] ]]; then
+                default=$(echo $columnDef | grep -oP '(?<=default )[^;]*(?=[;|$]?)')
+            fi
+            alterTableAddColumn $tableName $columnName $columnType $columnLength $constraint $default
+        elif [[ $action =~ [dD][rR][oO][pP] ]]; then
+            column=$(echo $1 | grep -ioP '(?<=drop column )[a-zA-Z0-9_]+(?=[;$]?)')
+            alterTableDropColumn $table $column
+        elif [[ $action =~ [mM][oO][dD][iI][fF][yY] ]]; then
+            columnDef=$(echo $1 | grep -oP '(?<=modify ).*(?=[;$]?)')
+            # echo $columnDef
+            # split over the space
+            IFS=' ' read -r -a column_names_dt <<< "$columnDef"
+            # push the column name to the column_names array
+            column_name="${column_names_dt[0]}"
+            # handling the data type
+            if [[ ${column_names_dt[1]} =~ [iI][nN][tT] ]]; then
+                column_type="int"
+                column_size="4"
+            elif [[ ${column_names_dt[1]} =~ [vV][aA][rR][cC][hH][aA][rR] ]]; then
+                column_type="varchar"
+                column_size=$(echo $columnDef | grep -oP '(?<=\().*(?=\))' | grep -oP '[0-9]+')
+            fi
+            # handling the constraints
+            constraint=""
+            # handling primary key constraint
+            if [[ $columnDef =~ [pP][rR][iI][mM][aA][rR][yY] ]]; then
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            # handling not null constraint
+            if [[ $columnDef =~ [nN][oO][tT][[:space:]]+[nN][uU][lL][lL] ]]; then 
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            # handling unique constraint
+            if [[ $columnDef =~ [uU][nN][iI][qQ][uU][eE] ]]; then
+                constraint+='y'
+            else
+                constraint+='n'
+            fi
+            sqlalterTable $table "modify" $column_name $column_type $column_size $constraint
+        elif [[ $1 =~ ^[[:space:]]*[cC][lL][eE][aA][rR] ]]; then
+            clear
+        fi
     else
         print "Error: Invalid query" "white" "red"
         return
@@ -184,3 +276,17 @@ function parseQuery() {
 # parseQuery "
 #     drop database iti;
 # "
+
+# alter table query
+# parseQuery "alter      table 
+#     emp 
+#         add
+        
+#          email
+#           varchar ( 30 ) not   null   unique primary key default 3;"
+
+# parseQuery "use database iti"
+
+# parseQuery "alter table emp drop column name;"
+
+# echo $(getColumnIndex "emp" "name")

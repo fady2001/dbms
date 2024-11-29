@@ -12,7 +12,6 @@
 
 # Load the helper functions
 # source ./helper.sh
-# source ./metadata.sh
 
 # function that create a new Table
 # $1: table name
@@ -562,6 +561,40 @@ function alterTableAddColumn() {
     print "Column added successfully" "white" "green"
 }
 
+# function to delete a column from the table
+# $1: table name
+# $2: column name
+function alterTableDropColumn () {
+    # delete the column from the metadata
+    if [[ $(deleteColumnFromMetadata $1 $2) -eq -1 ]]; then
+        echo -1
+        return
+    fi
+    # get column index
+    column_index=$(getColumnIndex $1 $2)
+    column_index=$(($column_index/4+1))
+
+    # delete the column from the table file based on the column index
+    awk -v col="$column_index" '
+    BEGIN {
+        FS = ":";
+        OFS = ":";
+    }
+    {
+        for (i = 1; i <= NF; i++) {
+            if (i != col) {  
+                printf "%s", $i;
+                if (i < NF && i != col - 1) 
+                    printf OFS;
+            }
+        }
+        printf "\n"; 
+    }' "$1" > .tmp
+        
+    print "Column dropped successfully" "white" "green"
+}
+
+
 
 alterTable() {
     local tableName=$1
@@ -647,10 +680,10 @@ alterTable() {
                         print "Error: default value and column don't have the same type" "white" "red"
                         break
                     fi
-
                     if [[ $(alterTableAddColumn $tableName $columnName $columnType $columnLength $constraint $default) -eq -1 ]]; then
                         break
                     fi
+                    break
                     ;;
                 "Drop Column")
                     read -p "Enter the column name: " columnName
@@ -670,7 +703,6 @@ alterTable() {
                         break
                     fi
                     print "Dropping column '$columnName' from table '$tableName'."
-                    # Example: sed -i "/$columnName/d" "$CURRENT_DB_PATH/$tableName"
                     ;;
                 "Rename Column")
                     read -p "Enter the current column name: " currentColumnName
@@ -692,6 +724,7 @@ alterTable() {
                     fi
                     # Add logic to rename the column in the table
                     renameColumn $tableName $currentColumnName $newColumnName
+                    break
                     ;;
                 "Change Data Type")
                     read -p "Enter the column name: " columnName
@@ -714,6 +747,7 @@ alterTable() {
                     fi
                     # Add logic to change the data type of the column
                     modifyColumnType $tableName $columnName $newDataType
+                    break
                     ;;
                 "Change Data Length")
                     read -p "Enter the column name: " columnName
@@ -740,6 +774,7 @@ alterTable() {
                     fi
                     
                     modifyColumnSize $tableName $columnName $columnLength
+                    break
                     ;;
                 "Add Constraint")
                     read -p "Enter the column name: " columnName
@@ -765,6 +800,7 @@ alterTable() {
                     if [[ $columnConstraint =~ [uU][nN][iI][qQ][uU][eE] ]]; then
                         $(modifyColumnConstraint $tableName $columnName "unique" "y")
                     fi
+                    break
                     ;;
                 "Remove Constraint")
                     read -p "remove the column constraint primary key or not null or unique: " columnConstraint
@@ -780,6 +816,7 @@ alterTable() {
                     if [[ $columnConstraint =~ [uU][nN][iI][qQ][uU][eE] ]]; then
                         $(modifyColumnConstraint $tableName $columnName "unique" "n")
                     fi
+                    break
                     ;;
                 "Exit")
                     print "Are you sure you want to exit? (y/n)" "black" "yellow"
