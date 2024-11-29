@@ -84,7 +84,7 @@ function fileExists() {
         # Handle case where input is '*'
     set -f
     
-    if [[ "$columns" =~ ^\ *\*\ *$ ]]; then
+    if [[ "$1" =~ ^\ *\*\ *$ ]]; then
         echo 0
     fi	
 
