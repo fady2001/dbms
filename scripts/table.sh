@@ -255,6 +255,7 @@ function updateTable() {
 # function that select from a Table
  function selectFromTable() {
     #Global variable to print
+  
     local output=""
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
@@ -263,6 +264,7 @@ function updateTable() {
         return
     fi
     IFS=','
+  
     # Set the field separator to a comma
     read -p "Enter The Columns You Would Like To Select Seperated by , (* for all): " -a columns
  
@@ -362,6 +364,7 @@ function updateTable() {
 	    output="Invalid Value"
 	    echo -e "$output"
 	    return
+	fi
     	# If the user wants to select all the columns
     	if [[ "$columns" == "*" ]]; then
     		NR=($(awk -v col="$column_wh" -v op="$op" -v val="$val" -v is_numeric="$is_numeric" '
