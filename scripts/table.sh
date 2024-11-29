@@ -498,7 +498,7 @@ function updateTable() {
     	column_wh=$((column_wh / 4 + 1))
     	if [[ "$val" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
 	    is_numeric=1  # Numeric
-	elif [[ "$val" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+	elif [[ "$val" =~ ^[a-zA-Z_][a-zA-Z0-9_]*(\ +[a-zA-Z0-9_]+)*$ ]]; then
     	    is_numeric=0  # String
 	else
 	    output="Invalid Value"
