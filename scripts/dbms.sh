@@ -24,6 +24,88 @@ exit=0
 export CURRENT_DB_PATH=""
 export CURRENT_DB_NAME=""
 
+# function for alter table
+# FILE: table.sh
+
+# Function to alter a table
+alterTable() {
+    clear
+    local tableName=$1
+    if [[ -z $tableName ]]; then
+        echo "Table name cannot be empty."
+        return 1
+    fi
+
+    if [[ ! -f "$CURRENT_DB_PATH/$tableName" ]]; then
+        echo "Table '$tableName' does not exist."
+        return 1
+    fi
+
+    echo "Select an option to alter the table:"
+    select option in "Add Column" "Drop Column" "Rename Column" "Change Data Type" "Change Data Length" "Add Constraint" "Remove Constraint" "Exit"; do
+        case $option in
+            "Add Column")
+                read -p "Enter column details (e.g., column_name data_type): " columnDetails
+                
+                # Add logic to add the column to the table
+                echo "Adding column '$columnName' of type '$columnType' to table '$tableName'."
+                # Example: echo "$columnName $columnType" >> "$CURRENT_DB_PATH/$tableName"
+                ;;
+            "Drop Column")
+                read -p "Enter the column name to drop: " columnName
+                # Add logic to drop the column from the table
+                echo "Dropping column '$columnName' from table '$tableName'."
+                # Example: sed -i "/$columnName/d" "$CURRENT_DB_PATH/$tableName"
+                ;;
+            "Rename Column")
+                read -p "Enter the current column name: " currentColumnName
+                read -p "Enter the new column name: " newColumnName
+                # Add logic to rename the column in the table
+                echo "Renaming column '$currentColumnName' to '$newColumnName' in table '$tableName'."
+                # Example: sed -i "s/$currentColumnName/$newColumnName/g" "$CURRENT_DB_PATH/$tableName"
+                ;;
+            "Change Data Type")
+                read -p "Enter the column name: " columnName
+                read -p "Enter the new data type: " newDataType
+                # Add logic to change the data type of the column
+                echo "Changing data type of column '$columnName' to '$newDataType' in table '$tableName'."
+                # Example: sed -i "s/\($columnName \)[^ ]*/\1$newDataType/" "$CURRENT_DB_PATH/$tableName"
+                ;;
+            "Change Data Length")
+                read -p "Enter the column name: " columnName
+                read -p "Enter the new data length: " newDataLength
+                # Add logic to change the data length of the column
+                echo "Changing data length of column '$columnName' to '$newDataLength' in table '$tableName'."
+                # Example: sed -i "s/\($columnName [^ ]* \)[^ ]*/\1$newDataLength/" "$CURRENT_DB_PATH/$tableName"
+                ;;
+            "Add Constraint")
+                read -p "Enter the column name: " columnName
+                read -p "Enter the constraint (e.g., NOT NULL, UNIQUE): " constraint
+                # Add logic to add the constraint to the column
+                echo "Adding constraint '$constraint' to column '$columnName' in table '$tableName'."
+                # Example: sed -i "s/\($columnName [^ ]* [^ ]* \)/\1$constraint /" "$CURRENT_DB_PATH/$tableName"
+                ;;
+            "Remove Constraint")
+                read -p "Enter the column name: " columnName
+                read -p "Enter the constraint to remove (e.g., NOT NULL, UNIQUE): " constraint
+                # Add logic to remove the constraint from the column
+                echo "Removing constraint '$constraint' from column '$columnName' in table '$tableName'."
+                # Example: sed -i "s/\($columnName [^ ]* [^ ]* \)$constraint /\1/" "$CURRENT_DB_PATH/$tableName"
+                ;;
+            "Exit")
+                print "Are you sure you want to exit? (y/n)" "black" "yellow"
+                read -n 1 -r -s -p "" REPLY
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    break
+                fi
+                ;;
+            *)
+                echo "Invalid option."
+                ;;
+        esac
+    done
+}
+
 # Function to run the menu mode
 run_menu_mode() {
     PS3="Please select an option: "
@@ -69,7 +151,7 @@ run_menu_mode() {
             done
 
         else
-            select option in  "Create Table" "List Tables" "Drop Table" "Insert into Table" "Select From Table" "Delete From Table" "Update Table" "Exit"
+            select option in  "Create Table" "List Tables" "Drop Table" "Insert into Table" "Select From Table" "Delete From Table" "Update Table" "Alter Table" "Exit"
             do
                 case $option in
                     "Create Table")
@@ -98,6 +180,10 @@ run_menu_mode() {
                     "Update Table")
                         read -p "Enter the table name: " tableName
                         updateTable $tableName
+                        ;;
+                    "Alter Table")
+                        read -p "Enter the table name: " tableName
+                        alterTable $tableName
                         ;;
                     "Exit")
                         connected=1
@@ -149,3 +235,4 @@ elif [[ $1 == "--help" ]]; then
 else
     echo "Invalid option. Use --menu or --sql."
 fi
+

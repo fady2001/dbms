@@ -245,7 +245,7 @@ function satisfyConstraints() {
         index=$((index/4+1))
         # check if the column has unique constraint but contains duplicates
         if [[ $(getColumnUniqueConstraint $1 $column) -eq 1 && $(containsDublicates $1 $index) -eq 1 ]]; then
-            print "Error: Column $column has unique constraint but contains duplicates" "white" "red"
+            print "Error: Column $column has unique constraint" "white" "red"
             echo 0
             return
         fi
@@ -270,7 +270,7 @@ function satisfyConstraints() {
 
         # check if the column has primary key constraint but contains duplicates
         if [[ $pk -eq $index && $(containsDublicates $1 $index) -eq 1 ]]; then
-            print "Error: Column $column has primary key constraint but contains duplicates" "white" "red"
+            print "Error: Column $column has primary key constraint" "white" "red"
             echo 0
             return
         fi
@@ -283,15 +283,21 @@ function satisfyConstraints() {
 # $2: column index
 # $3: value
 # returns 1 if the value exists in the column, 0 otherwise
-function valueExists () {
-    echo $(awk -v col="$2" -v val="$3" 'BEGIN { FS=":"; flag =0;} { if ($col == val) {
-            print 1
-            flag=1
+function valueExists() {
+    if awk -F':' -v col="$2" -v val="$3" '
+    BEGIN { found=0 }
+    {
+        if ($col == val) {
+            found=1
             exit
-
-            } else {
-                flag = 0
-            }} END { if (!flag) print 0}' "$1")
+        }
+    }
+    END { exit !found }
+    ' "$1"; then
+        echo 1
+    else
+        echo 0
+    fi
 }
 
 # helper function that takes a input and checks if it is contains only digits or not

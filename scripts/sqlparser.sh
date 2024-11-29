@@ -182,5 +182,5 @@ function parseQuery() {
 # # "
 
 # parseQuery "
-#     delete from emp where id = 1;
+#     drop database iti;
 # "

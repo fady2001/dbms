@@ -107,7 +107,13 @@ function dropDatabase() {
 
     # check if the database already exists
     if [[ $(dirExists $1) -eq 1 ]]; then
-        rm -r -i $1
+        # use zenity to ask the user if he is sure to delete the database
+        zenity --question --title="Confirmation" --text="Are you sure you want to delete the database $1?"
+        if [[ $? -eq 0 ]]; then
+            rm -r $1
+        else
+            return
+        fi
         print "Database dropped successfully" "white" "green"
     else 
         print "Error: Database does not exist" "white" "red"

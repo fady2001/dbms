@@ -1,1 +1,2 @@
-emp:id:int:4:ynn:name:varchar:30:nyy:age:int:4:nyn
+emp:id:int:10:ynn:name:varchar:30:nyy:age:int:5:nnn:salary:int:5:nnn
+std:id:int:4:yyy:name:varchar:5:nny:age:int:8:nyn
