@@ -80,6 +80,14 @@ function isAlphaNumeric() {
 # if no given directory, it checks in the current directory
 # returns 1 if it exists, 0 otherwise
 function fileExists() {
+
+        # Handle case where input is '*'
+    set -f
+    
+    if [[ "$1" =~ ^\ *\*\ *$ ]]; then
+        echo 0
+    fi	
+
     if [ -z "$2" ]; then
         if [ -e "$1" ]; then
             echo 1
@@ -488,4 +496,18 @@ function isStringColumn() {
 function isLengthLessThan() {
     awk -v col="$2" -v num="$3" '
     BEGIN { FS=":"; flag = 1;} { if (length($col) >= num) { flag = 0; exit } } END { print flag }' "$1"
+}
+
+#Check if an operator is valid or not
+function valid_op() {
+    # List of recognized operators
+    operators=("=" "!=" "<" ">" "<=" ">=")
+
+    # Check if the operator is in the list
+    if [[ ! " ${operators[@]} " =~ " $1 " && $1 != "" ]]; then
+    	output+="Operator $op is not recognized\n"
+        echo 0
+    else 
+    	echo 1
+    fi
 }
