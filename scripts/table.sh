@@ -378,7 +378,9 @@ function updateTable() {
 			if ((op == ">" && $col > val) || 
 			    (op == "<" && $col < val) || 
 			    (op == "=" && $col == val) || 
-			    (op == "!=" && $col != val)) {
+			    (op == "!=" && $col != val)||
+			    (op == ">=" && $col >= val)||
+			    (op == "<=" && $col <= val)) {
 			    print NR;
 			}
 		    } else { # val is a string
@@ -417,7 +419,9 @@ function updateTable() {
 			if ((op == ">" && $col > val) || 
 			    (op == "<" && $col < val) || 
 			    (op == "=" && $col == val) || 
-			    (op == "!=" && $col != val)) {
+			    (op == "!=" && $col != val) ||
+			    (op == ">=" && $col >= val)||
+			    (op == "<=" && $col <= val)) {
 			    for (i = 1; i <= length(arr); i++) {
 			printf "%s", $arr[i];
 			if (i < length(arr)) {
@@ -509,7 +513,7 @@ function updateTable() {
 		BEGIN { FS = ":"; }
 		{
 		    if (is_numeric == 1) {
-			if ((op == ">" && $col > val) || (op == "<" && $col < val) || (op == "=" && $col == val) || (op == "!=" && $col != val)) {
+			if ((op == ">" && $col > val) || (op == "<" && $col < val) || (op == "=" && $col == val) || (op == "!=" && $col != val)|| (op == ">=" && $col >= val)|| (op == "<=" && $col <= val) ) {
 			    print NR;
 			}
 		    } else {
