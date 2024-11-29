@@ -1,1 +1,1 @@
-emp:id:varchar:9:ynn
+emp:id:int:9:ynn:name:varchar:10:nnn

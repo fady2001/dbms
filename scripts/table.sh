@@ -270,6 +270,11 @@ function selectFromTable() {
     # get conditions
     read -p "Enter the conditions like sql (age=30 and/or id=10): " conditions
     
+    if [[ -z $columns ]]; then
+        print "Error: Columns cannot be empty" "white" "red"
+        return
+    fi
+
     # check if columns is *
     if [[ ${columns[0]} == "*" ]]; then
         # set columns array to all columns in the table
