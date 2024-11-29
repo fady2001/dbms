@@ -457,3 +457,35 @@ function evaluateConditions() {
         echo 0
     fi
 }
+
+# helper function that takes a table path and a column name and check if all values in the column are numbers or not
+# $1: table path
+# $2: column name
+# returns 1 if all values are numbers, 0 otherwise
+function isNumberColumn() {
+    index=$(getColumnIndex $1 $2)
+    index=$((index/4+1))
+    awk -v col="$index" '
+    BEGIN { FS=":"; flag = 1;} { if ($col !~ /^-?[0-9]+$/) { flag = 0; exit } } END { print flag }' "$1"
+}
+
+# helper function that takes a table path and a column name and check if all values in the column are strings or not
+# $1: table path
+# $2: column name
+# returns 1 if all values are strings, 0 otherwise
+function isStringColumn() {
+    index=$(getColumnIndex $1 $2)
+    index=$((index/4+1))
+    awk -v col="$index" '
+    BEGIN { FS=":"; flag = 1;} { if ($col ~ /^-?[0-9]+$/) { flag = 0; exit } } END { print flag }' "$1"
+}
+
+# helper function that takes a table path and a number and check if length of all values in the column are less than the given number
+# $1: table path
+# $2: column index
+# $3: number
+# returns 1 if all values are less than the given number, 0 otherwise
+function isLengthLessThan() {
+    awk -v col="$2" -v num="$3" '
+    BEGIN { FS=":"; flag = 1;} { if (length($col) >= num) { flag = 0; exit } } END { print flag }' "$1"
+}
