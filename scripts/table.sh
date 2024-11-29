@@ -253,107 +253,283 @@ function updateTable() {
 
 
 # function that select from a Table
-# $1: table name
-function selectFromTable() {
-    set -f
+ function selectFromTable() {
+    #Global variable to print
+    local output=""
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Error: Table does not exist" "white" "red"
+        output+="Table does not exist\n"
+        echo -e "$output"
         return
     fi
-
-    declare -a columns
-
-    # get column names that user wants to select from separated by comma
     IFS=','
-    read -p "Enter the columns you want to select separated by comma: " -a columns
-    # get conditions
-    read -p "Enter the conditions like sql (age=30 and/or id=10): " conditions
+    # Set the field separator to a comma
+    read -p "Enter The Columns You Would Like To Select Seperated by , (* for all): " -a columns
+ 
+    read -p "Enter The Condition (Empty for NO Condition): " condition
+    # Triming the white spaces
+    condition=$(echo "$condition" | sed 's/[[:space:]]*\([=!<>]=\|[=<>]\)[[:space:]]*/\1/g' | xargs)
     
-    # check if columns is *
-    if [[ ${columns[0]} == "*" ]]; then
-        # set columns array to all columns in the table
-        IFS=' ' read -r -a columns <<< "$(getColumnNames $1)"    
-    fi
-    set +f
-    # remove leading and trailing whitespaces
-    for i in ${!columns[@]}; do
-        columns[$i]=$(echo ${columns[$i]} | tr -d ' ')
-    done
-
-    # get column indecies in table file
+    set -f
+    if [[ "$columns" =~ ^\ *\*\ *$ ]]; then
+        columns=("*")
+    fi	
+    # Loop through each column name
     declare -a indecies
-    for column in ${columns[@]}; do
-        # get column index
-        index=$(getColumnIndex $1 $column)
-        # check if the column exists
-        if [[ $index -eq -1 ]]; then
-            print "Error: Column $column does not exist in the table" "white" "red"
-            return
-        else
-            # actual index in the table file equals (index/4)+1
-            indecies+=($((index/4+1)))
-        fi
-    done
+    if  [[ "$columns" != "*" ]]; then
+        # Triming the white spaces
+        for i in ${!columns[@]}; do
+        	columns[$i]=$(echo ${columns[$i]} | tr -d '[:space:]')
+    	done
+    	for column in ${columns[@]}; do
+	        # get column index   		
+        	index=$(getColumnIndex $1 "$column")
+        	# check if the column exists
+        	if [[ $index -eq -1 ]]; then
+        	    	 output+="Column $column does not exist in the table\n"
+                	echo -e "$output"
+        	else
+        	    # actual index in the table file equals (index/4)+1
+        	    indecies+=($((index/4+1)))
+        	fi
+    	done
+    fi
+    
+    indecies=$(IFS=,; echo "${indecies[*]}") # Join values with a comma
+    
+    # Extracting 
+    # Extract the column name (everything before the first operator)
+    column_wh=$(echo "$condition" | grep -oE '^[a-zA-Z_][a-zA-Z0-9_]*')
+    
+    # Handle if the where condition column name is entered wrong
+    column_names=$(getColumnNames $1)
+    # Check if column is valid
+    if [[ "$column_wh" != "" && ! " ${column_names[@]} " =~ " ${column_wh} " ]]; then
+        output+="Column $column_wh is not recognized in WHERE statement\n"
+        echo -e "$output"
+        return
+    fi
+    # Extract the operator 
+    op=$(echo "$condition" | grep -oE '(!=|<=|>=|=|<|>)')
 
-    # create a variable to store the selected columns names separated by tab to print them
-    output=""
-    for column in ${columns[@]}; do
-        output="$output$column\t"
-    done
-    # remove trailing tab
-    output=${output%?}
-    # add a new line
-    output="$output"\n
+    # Extract the value (everything after the operator)
+    val=$(echo "$condition" | sed -E "s/^[a-zA-Z_][a-zA-Z0-9_]*${op}//")
+    
+    if [[ $(valid_op $op) != 1 ]]; then
+    	output+="Operator $op is not recognized\n"
+        echo -e "$output"
+        return
+    fi
+    # Reset IFS to default
+    unset IFS
+    
+    # If there is no where statment
+    if [[ ($column_wh == "") ]] ; then
 
-    # loop over the table file
-    while IFS= read -r line; do
-        eval_cond=$(evaluateConditions $1 $line $conditions)
-        if [[ $eval_cond -eq 1 ]]; then
-            # print the selected columns names and values separated by tab
-            IFS=':' read -r -a fields <<< $line
-            # append the selected columns values to the output variable
-            for i in ${indecies[@]}; do
-                output="$output${fields[$i-1]}\t"
-            done
-            # remove trailing tab
-            output=${output%?}
-            output="$output"\n
-        elif [[ $eval_cond -eq -1 ]]; then
-            print "Error: Invalid operator" "white" "red"
-            return
-        fi
-    done < $1
-    echo -e $output
-}
+	#If the user wants to select all the columns
+	if [[ "$columns" == "*" ]]; then
+		IFS=' ' read -r -a names <<< "$(getColumnNames $1)"    
+		for column in ${names[@]}; do
+			output="$output$column:"
+		    done
+		    # Remove trailing colon if it exists
+		    output="${output%:}"
+		    # Add a newline after the loop
+		    output="$output\n"
+    		output+=$(sed -n 'p' $1)
+
+	#If the user wants to certain columns
+    	else 
+    		for column in ${columns[@]}; do
+                output="$output$column:"
+		done
+		# Remove trailing colon if it exists
+		output=${output%:}
+		output="$output\n"
+    		output+=$(awk -v ind="$indecies" 'BEGIN {FS=":"; split(ind, arr, ",");} {for (i in arr) { printf "%s:",$arr[i]}printf"\n"}' $1)
+
+    	fi
+    # there is a where statment
+    else
+    	temp=$(getColumnIndex $1 $column_wh);
+    	column_wh=$((temp/4+1));
+    	
+    	if [[ "$val" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+	    is_numeric=1  # Numeric
+	elif [[ "$val" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+    	    is_numeric=0  # String
+	else
+	    output="Invalid Value"
+	    echo -e "$output"
+	    return
+    	# If the user wants to select all the columns
+    	if [[ "$columns" == "*" ]]; then
+    		NR=($(awk -v col="$column_wh" -v op="$op" -v val="$val" -v is_numeric="$is_numeric" '
+		BEGIN {
+		    FS = ":"; 
+		}
+		{
+		    # Construct condition 
+		    if (is_numeric == 1) {
+			if ((op == ">" && $col > val) || 
+			    (op == "<" && $col < val) || 
+			    (op == "=" && $col == val) || 
+			    (op == "!=" && $col != val)) {
+			    print NR;
+			}
+		    } else { # val is a string
+			if ((op == "=" && $col == val) || 
+			    (op == "!=" && $col != val)) {
+			    print NR;
+			}
+		    }
+		}' "$1"))
+		if [[ ${#NR[@]} -gt 0 ]]; then
+	  	f="${NR[0]}"
+	  	l="${NR[-1]}"
+		IFS=' ' read -r -a names <<< "$(getColumnNames $1)"    
+		for column in ${names[@]}; do
+			output="$output$column:"
+		done
+		# Remove trailing colon if it exists
+		output="${output%:}"
+		# Add a newline after the loop
+		output="$output\n"
+		output+=$(sed -n "${f},${l}p" $1)  
+		fi      	
+	# Selecting specific columns
+	else 	 
+		for column in ${columns[@]}; do
+			output+="$column:"
+		done
+		# Remove trailing colon if it exists and add a newline
+		output="${output%:}\n"
+	        
+	        output+=$(awk -v col="$column_wh" -v op="$op" -v val="$val" -v ind="$indecies" -v is_numeric="$is_numeric" '
+		BEGIN {FS = ":"; OFS = ":"; split(ind, arr, ",");}
+		{
+		    # Construct condition dynamically based on operator
+		    if (is_numeric == 1) {
+			if ((op == ">" && $col > val) || 
+			    (op == "<" && $col < val) || 
+			    (op == "=" && $col == val) || 
+			    (op == "!=" && $col != val)) {
+			    for (i = 1; i <= length(arr); i++) {
+			printf "%s", $arr[i];
+			if (i < length(arr)) {
+			    printf OFS;
+			} else {
+			    printf "\n";
+			}
+		    }
+			}
+		    } else { # val is a string
+			if ((op == "=" && $col == val) || 
+			    (op == "!=" && $col != val)) {
+			    for (i = 1; i <= length(arr); i++) {
+			printf "%s", $arr[i];
+			if (i < length(arr)) {
+			    printf OFS;
+			} else {
+			    printf "\n";
+			}
+		    }
+			}
+		    }
+		}' "$1")
+	fi
+    fi
+    
+    set +f
+    echo -e "$output"
+ }
+
+
+
 
 
 # # function that delete from a Table
-#$1: table name
-function deleteFromTable() {
+ function deleteFromTable() {
+    local output=""
     # check if table exists
     if [[ $(fileExists $1) -eq 0 ]]; then
-        print "Error: Table does not exist" "white" "red"
+        print "Table does not exist" "white" "red"
         return
     fi
+    
+    #read -p "Enter the Table name: "  table_name
+    read -p "Enter Condition (e.g., age=35): " condition
+    
+    #Triming the white spaces
+    condition=$(echo "$condition" | sed 's/[[:space:]]*\([=!<>]=\|[=<>]\)[[:space:]]*/\1/g' | xargs)
 
-    # get conditions
-    read -p "Enter the conditions like sql (age=30 and/or id=10): " conditions
+       # Extracting 
+    # Extract the column name (everything before the first operator)
+    column_wh=$(echo "$condition" | grep -oE '^[a-zA-Z_][a-zA-Z0-9_]*')
+    
+    # Handle if the where condition column name is entered wrong
+    column_names=$(getColumnNames $1)
+    
+    # Check if column is valid
+    if [[ "$column_wh" != "" && ! " ${column_names[@]} " =~ " ${column_wh} " ]]; then
+        output+="Column $column_wh is not recognized in WHERE statement\n"
+        echo -e "$output"
+        return
+    fi
+    # Extract the operator 
+    op=$(echo "$condition" | grep -oE '(!=|<=|>=|=|<|>)')
+
+    if [[ $(valid_op $op) != 1 ]]; then
+    	output+="Operator $op is not recognized\n"
+        echo -e "$output"
+        return
+    fi    
+    # Extract the value (everything after the operator)
+    val=$(echo "$condition" | sed -E "s/^[a-zA-Z_][a-zA-Z0-9_]*${op}//")
 
 
-    # loop over the table file
-    while IFS= read -r line; do
-        eval_cond=$(evaluateConditions $1 $line $conditions)
-        if [[ $eval_cond -eq 1 ]]; then
-            # delete the line from the table file
-            sed -i "/$line/d" $1
-        elif [[ $eval_cond -eq -1 ]]; then
-            print "Error: Invalid operator" "white" "red"
-            return
-        fi
-    done < $1
-    print "Records deleted successfully" "white" "green"
-}
+    # if there is a where statment 
+    if [[ -n "$column_wh" ]]; then
+    	column_wh=$(getColumnIndex $1 $column_wh);
+    	column_wh=$((column_wh / 4 + 1))
+    	if [[ "$val" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+	    is_numeric=1  # Numeric
+	elif [[ "$val" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+    	    is_numeric=0  # String
+	else
+	    output="Invalid Value"
+	    echo -e "$output"
+	    return
+	fi
+    		NR=($(awk -v col="$column_wh" -v op="$op" -v val="$val" -v is_numeric="$is_numeric" '
+		BEGIN { FS = ":"; }
+		{
+		    if (is_numeric == 1) {
+			if ((op == ">" && $col > val) || (op == "<" && $col < val) || (op == "=" && $col == val) || (op == "!=" && $col != val)) {
+			    print NR;
+			}
+		    } else {
+			if ((op == "=" && $col == val) || (op == "!=" && $col != val)) {
+			    print NR;
+			}
+		    }
+		}' "$1"))
+		
+		if [[ ${#NR[@]} -gt 0 ]]; then
+			f="${NR[0]}"
+			l="${NR[-1]}"	
+			sed -i "${f},${l}d" $1	
+			output="Records deleted successfully"
+			echo -e  "$output"
+		fi
+    #If there is no where statment then we delete all the records
+    else 
+    	sed -i "d" $1
+    	output="Records deleted successfully"
+        echo -e  "$output"
+    
+    fi  
+ }
 
 # function to alter table (add new column)
 # $1: table name
