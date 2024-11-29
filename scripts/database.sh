@@ -10,37 +10,37 @@
 function createDatabase() {
     # check if the database name is alphanumeric
     if [[ $(isAlphaNumeric $1) -eq 0 ]]; then
-        print "Database name should be alphanumeric" "white" "red"
+        print "Error: Database name should be alphanumeric" "white" "red"
         return
     fi
 
     # check if the database already exists
     if [[ $(dirExists $1) -eq 1 ]]; then
-        print "Database already exists" "white" "red"
+        print "Error: Database already exists" "white" "red"
         return
     fi
 
     # check if the database name is too long
     if [[ $(isNameTooLong $1) -eq 1 ]]; then
-        print "Database name is too long" "white" "red"
+        print "Error: Database name is too long" "white" "red"
         return
     fi
 
     # check if the path is too long
     if [[ $(isPathTooLong $1) -eq 1 ]]; then
-        print "Path is too long" "white" "red"
+        print "Error: Path is too long" "white" "red"
         return
     fi
 
     # check if we have write permission in the current directory
     if [[ $(hasWritePermission) -eq 0 ]]; then
-        print "No write permission in the current directory" "white" "red"
+        print "Error: No write permission in the current directory" "white" "red"
         return
     fi
 
     # check if we have execute permission in the current directory
     if [[ $(hasExecutePermission) -eq 0 ]]; then
-        print "No execute permission in the current directory" "white" "red"
+        print "Error: No execute permission in the current directory" "white" "red"
         return
     fi
 
@@ -56,15 +56,15 @@ function listDatabases() {
 
     # check if we have read permission in the current directory
     if [[ $(hasReadPermission) -eq 0 ]]; then
-        print "No read permission in the current directory" "white" "red"
+        print "Error: No read permission in the current directory" "white" "red"
         return
     fi
 
     # check if there are no databases
     if [[ $(find . -maxdepth 1 -type d ! -name '.' ! -name '.vscode' | wc -l) -eq 0 ]]; then
-        print "No databases found" "white" "red"
+        print "Error: No databases found" "white" "red"
     else
-        print "Listing Databases" "white" "green"
+        print "Listing Databases successfully" "white" "green"
         ls -d */ | nl | sed 's|/||'
     fi
 }
@@ -74,13 +74,13 @@ function connectToDatabase() {
     
     # check if we have read permission in the current directory
     if [[ $(hasReadPermission) -eq 0 ]]; then
-        print "No read permission in the current directory" "white" "red"
+        print "Error: No read permission in the current directory" "white" "red"
         return 1
     fi
 
     # check if we have execute permission in the current directory
     if [[ $(hasExecutePermission) -eq 0 ]]; then
-        print "No execute permission in the current directory" "white" "red"
+        print "Error: No execute permission in the current directory" "white" "red"
         return 1
     fi
 
@@ -89,10 +89,10 @@ function connectToDatabase() {
         cd $1
         CURRENT_DB_PATH=$PWD
         CURRENT_DB_NAME=$1
-        print "Connected to $1" "white" "green"
+        print "Connected to $1 successfully" "white" "green"
         return 0
     else
-        print "Database does not exist" "white" "red"
+        print "Error: Database does not exist" "white" "red"
         return 1
     fi
 }
@@ -101,16 +101,22 @@ function connectToDatabase() {
 function dropDatabase() {
     # check if we have write permission in the current directory
     if [[ $(hasWritePermission) -eq 0 ]]; then
-        print "No write permission in the current directory" "white" "red"
+        print "Error: No write permission in the current directory" "white" "red"
         return
     fi
 
     # check if the database already exists
     if [[ $(dirExists $1) -eq 1 ]]; then
-        rm -r -i $1
+        # use zenity to ask the user if he is sure to delete the database
+        zenity --question --title="Confirmation" --text="Are you sure you want to delete the database $1?"
+        if [[ $? -eq 0 ]]; then
+            rm -r $1
+        else
+            return
+        fi
         print "Database dropped successfully" "white" "green"
     else 
-        print "Database does not exist" "white" "red"
+        print "Error: Database does not exist" "white" "red"
         return
     fi
 }

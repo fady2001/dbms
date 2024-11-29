@@ -10,6 +10,7 @@ import { exec } from 'child_process';
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const script_path = path.join(path.resolve(__dirname, '../..'), 'scripts')
+const connectDatabaseName = ""
 
 // The built directory structure
 //
@@ -129,7 +130,7 @@ ipcMain.on('get-databases', (event) => {
   // execute the bash script inside scripts folder
   console.log(`${script_path}`);
   // cd into the scripts folder and execute the dbms.sh script
-  exec(`cd ${script_path}&&./dbms.sh --list`, (error, stdout, stderr) => {
+  exec(`cd ${script_path}&&./GUIinterface.sh --listDatabases`, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
       return;
@@ -145,7 +146,9 @@ ipcMain.on('get-databases', (event) => {
     console.log("dbList",dbList)
     // get array from second element of each array
     const dbNames = dbList.map(db => db[1]);
-    event.sender.send('databases', dbNames);
+    let err = stderr.replace(/\x1b\[[0-9;]*m/g, '');
+    // remove ANSI color codes
+    event.sender.send('databases', { dbNames, err });
   });
 })
 
@@ -155,9 +158,11 @@ ipcMain.on('get-tables', (event, dbName) => {
   // execute the bash script inside scripts folder
   console.log(`${script_path}`);
   // cd into the scripts folder and execute the dbms.sh script
-  exec(`cd ${script_path}/${dbName}&&ls`, (error, stdout, stderr) => {
+  console.log(`${dbName}`)
+  exec(`cd ${script_path}/${dbName} && ${script_path}/GUIinterface.sh --listTables`, (error, stdout, stderr) => {     
     if (error) {
       console.error(`exec error: ${error}`);
+      event.sender.send('tables', { tableNames: [], err: "Error: No permissions" });
       return;
     }
     console.log(`stdout: ${stdout}`);
@@ -167,25 +172,65 @@ ipcMain.on('get-tables', (event, dbName) => {
     // remove the last empty string
     tables.pop();
     // trim then split by tab
-    const tableList = tables.map(table => table.trim());
+    const tableList = tables.map(table => table.trim().split('\t'));
     console.log("tableList",tableList)
+    const tableNames = tableList.map(table => table[1]);
     // get array from second element of each array
-    event.sender.send('tables', tableList);
+    let err = stderr.replace(/\x1b\[[0-9;]*m/g, '');
+    event.sender.send('tables', { tableNames, err });
   });
 })
 
-ipcMain.on('query', (event, dbName, query) => {
+// create a new ipcMain that will handle the get-columns event
+// it takes the event, the database name, and the table name as arguments
+ipcMain.on('get-columns', (event, dbName, tableName) => {
   // execute the bash script inside scripts folder
   console.log(`${script_path}`);
   // cd into the scripts folder and execute the dbms.sh script
-  exec(`cd ${script_path}/${dbName}&&./dbms.sh --sql "${query}"`, (error, stdout, stderr) => {
+  exec(`cd ${script_path}/${dbName} && ${script_path}/GUIinterface.sh --listColumns ${dbName} ${tableName}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
+      event.sender.send('columns', { columnNames: [], err: "Error: No permissions" });
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    // split the output by new line
+    const columns = stdout.split('\n');
+    console.log("columns",columns)
+    // remove the last empty string
+    columns.pop();
+    // trim then split by tab
+    const columnList = columns.map(column => column.trim().split(' '));
+    console.log("columnList",columnList)
+    const columnNames = columnList[0];
+    // get array from second element of each array
+    let err = stderr.replace(/\x1b\[[0-9;]*m/g, '');
+    event.sender.send('columns', { columnNames, err });
+  });
+})
+
+// create a new ipcMain that handle sql query
+ipcMain.on('execute-query', (event, query) => {
+  // execute the bash script inside scripts folder
+  console.log(`${script_path}`);
+  // cd into the scripts folder and execute the dbms.sh script
+  exec(`cd ${script_path}/iti && ${script_path}/GUIinterface.sh --parseQuery "${query}"`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      event.sender.send('query-result', { result: [], err: "Error: No permissions" });
       return;
     }
     console.log(`stdout: ${stdout}`);
     // split the output by new line
     const result = stdout.split('\n');
     console.log("result",result)
+    // remove the last empty string
+    result.pop();
+    // trim then split by tab
+    const resultList = result.map(row => row.trim().split('\t'));
+    console.log("resultList",resultList)
+    // get array from second element of each array
+    let err = stderr.replace(/\x1b\[[0-9;]*m/g, '');
+    event.sender.send('query-result', { result: resultList, err });
   });
 })

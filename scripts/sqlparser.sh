@@ -6,7 +6,7 @@ function parseQuery() {
     set -f
     # check if the query is empty
     if [[ -z $1 ]]; then
-        print "Query is empty" "white" "red"
+        print "Error: Query is empty" "white" "red"
         return
     fi
     ###############################################################
@@ -159,7 +159,7 @@ function parseQuery() {
     elif [[ $1 =~ ^[[:space:]]*[cC][lL][eE][aA][rR] ]]; then
         clear
     else
-        print "Invalid query" "white" "red"
+        print "Error: Invalid query" "white" "red"
         return
     fi
     set +f
@@ -182,5 +182,5 @@ function parseQuery() {
 # # "
 
 # parseQuery "
-#     delete from emp where id = 1;
+#     drop database iti;
 # "

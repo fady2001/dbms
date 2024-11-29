@@ -9,7 +9,7 @@
 #####################################################################################################
 
 # Each record in the metadata file represents a table in the database and has the following format:
-# Table name : column1 name - column1 data type - column1 size - isPK isNull isUnique : column2 name - column2 data type - column2 size - isPK isNull isUnique : ...
+# Table name : column1 name - column1 data type - column1 size - isPK notNull isUnique : column2 name - column2 data type - column2 size - isPK notNull isUnique : ...
 # e.g., users : id - int - 4 - yyy : name - varchar - 20 - false : email - varchar - 50 - nyy
 
 # Function that creates a new metadata file for the database
@@ -17,7 +17,7 @@ function createMetadataFile() {
     # there are no checks needed as they are already checked in the database.sh script
     # Create the hidden metadata file inside the database directory
     touch "$1/.$1"
-    print "Metadata file created for database $1" "white" "green"
+    print "Metadata file created for database $1 successfully" "white" "green"
 }
 
 # Function that adds a new table to the metadata file
@@ -25,7 +25,7 @@ function createMetadataFile() {
 function addTableToMetadata() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
 
@@ -45,7 +45,7 @@ function addTableToMetadata() {
 
     # Loop to read column details for each column in a single line
     for ((i = 1; i <= $columnCount; i++)); do
-        echo "Enter details for column $i in the format: name type size isPK isNull isUnique (e.g., id int 4 yyy)"
+        echo "Enter details for column $i in the format: name type size isPK notNull isUnique (e.g., id int 4 yyy)"
         read -p "Column $i details: " columnDetails
         # end line
         echo
@@ -56,7 +56,7 @@ function addTableToMetadata() {
 
         # validate the column name
         if [[ $(isAlphaNumeric $columnName) -eq 0 ]]; then
-            echo "Column name should be alphanumeric"
+            print "Column name should be alphanumeric" "white" "red"
             # decrement the counter to re-enter the column details
             ((i--))
             continue
@@ -64,28 +64,28 @@ function addTableToMetadata() {
 
         # validate the column type either int or varchar
         if [[ $columnType != "int" && $columnType != "varchar" ]]; then
-            echo "Column type should be either int or varchar"
+            print "Column type should be either int or varchar" "white" "red"
             ((i--))
             continue
         fi
 
         # validate the column size must be a number not equal to zero
         if [[ ! $columnSize =~ ^[0-9]+$ || $columnSize -eq 0 ]]; then
-            echo "Column size should be a number greater than zero"
+            print "Column size should be a number greater than zero" "white" "red"
             ((i--))
             continue
         fi
 
         # validate the column constraints to be any combination of y or n limited to 3 characters
         if [[ ! $columnConstraints =~ ^[yn]{3}$ ]]; then
-            echo "Column constraints should be any combination of y or n limited to 3 characters"
+            print "Column constraints should be any combination of y or n limited to 3 characters" "white" "red"
             ((i--))
             continue
         fi
 
         # check if the primary key is already set
         if [[ ${columnConstraints:0:1} == 'y' && $isPrimaryKeySet -eq 1 ]]; then
-            echo "Primary key is already set"
+            print "Primary key is already set" "white" "red"
             ((i--))
             continue
         else
@@ -97,7 +97,7 @@ function addTableToMetadata() {
         tableMetadata+="$columnName:$columnType:$columnSize:$columnConstraints:"
     done
     if [[ $isPrimaryKeySet -eq 0 ]]; then
-        print "Primary key is not set" "white" "red"
+        print "Error: Primary key is not set" "white" "red"
         return
     fi
     # Remove the trailing ':' from the last column
@@ -106,7 +106,7 @@ function addTableToMetadata() {
     # Append the table metadata to the metadata file
 
     echo "$1:$tableMetadata" >> "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
-    print "Table $1 added to metadata." "white" "green"
+    print "Table $1 added to metadata successfully." "white" "green"
 }
 
 # Function that drops a table from the metadata file
@@ -115,14 +115,14 @@ function addTableToMetadata() {
 function dropTableFromMetadata() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         echo 0
         return
     fi
 
     # Remove the table metadata from the metadata file
     sed -i "/^$1:/d" "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
-    print "Table $1 dropped from metadata." "white" "green"
+    print "Table $1 dropped from metadata successfully." "white" "green"
 }
 
 # function that takes and table name and column name and return the column index
@@ -132,7 +132,7 @@ function dropTableFromMetadata() {
 function getColumnIndex() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         echo -1
         return
     fi
@@ -238,7 +238,7 @@ function getColumnSize() {
 function getPrimaryKey() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for primary key (initialized to -1, in case we don't find it)
@@ -269,11 +269,11 @@ function getPrimaryKey() {
 # function that takes and table name and column name and return the column null constraint
 # $1: table name
 # $2: column name
-# return: 1 if the column is nullable, 0 otherwise, -1 if the column does not exist
+# return: 1 if the column is has not null constraint, 0 otherwise, -1 if the column does not exist
 function getColumnNullConstraint() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for column null constraint (initialized to -1, in case we don't find it)
@@ -287,10 +287,10 @@ function getColumnNullConstraint() {
             for (i = 5; i <= NF; i+=4) {
                 if ($(i-3) == column_name) {
                     if (substr($i, 2, 1) == "y") {
-                        print 0
+                        print 1
                         exit
                     } else {
-                        print 1
+                        print 0
                         exit
                     }
                 }
@@ -313,7 +313,7 @@ function getColumnNullConstraint() {
 function getColumnUniqueConstraint() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
     # Variable for column unique constraint (initialized to -1, in case we don't find it)
@@ -353,7 +353,7 @@ function getColumnUniqueConstraint() {
 function getColumnNames() {
     # Check if the metadata file exists
     if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
-        print "Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
         return
     fi
 
@@ -375,11 +375,6 @@ function getColumnNames() {
     # Convert the space-separated string to an array
     IFS=' ' read -r -a column_names <<< "$column_names_str"
 
-    # Check if the array is empty and set to -1 if no columns were found
-    if [[ ${#column_names[@]} -eq 0 ]]; then
-        column_names=(-1)
-    fi
-
     # Print the array elements
     echo "${column_names[@]}"
 }
@@ -396,15 +391,15 @@ function followConstraints() {
     # first check: if the column is primary key then it mustn't be empty and must be unique (not exist in the table)
     if [[ $(getPrimaryKey $1) == $2 ]]; then
         # check if the value is empty
-        if [[ -z $3 || $3 == "" || $3 == "null" ]]; then
-            print "Primary key must not null" "white" "red"
+        if [[ -z $3 || $3 == "null" ]]; then
+            print "Error: Primary key must not null" "white" "red"
             echo 0
             return
         fi
         # check if the value exists in the table
         # index will be (index/4)+1 to map between index in metadata and index in the actual table
         if [[ $(valueExists $1 $((index/4+1)) $3) -eq 1 ]]; then
-            print "Primary key must be unique" "white" "red"
+            print "Error: Primary key must be unique" "white" "red"
             echo 0
             return
         fi
@@ -413,8 +408,8 @@ function followConstraints() {
     # second check: if the column is not null then it mustn't be empty
     if [[ $(getColumnNullConstraint $1 $2) -eq 1 ]]; then
         # check if the value is empty or "" or equal to null
-        if [[ -z $3 || $3 == "" || $3 == "null" ]]; then
-            print "$2 must not be null" "white" "red"
+        if [[ -z $3 || $3 == "null" ]]; then
+            print "Error: $2 must not be null" "white" "red"
             echo 0
             return 
         fi
@@ -424,7 +419,7 @@ function followConstraints() {
     if [[ $(getColumnUniqueConstraint $1 $2) -eq 1 ]]; then
         # check if the value exists in the table
         if [[ $(valueExists $1 $index $3) -eq 1 ]]; then
-            print "$2 must be unique" "white" "red"
+            print "Error: $2 must be unique" "white" "red"
             echo 0
             return
         fi
@@ -432,14 +427,14 @@ function followConstraints() {
 
     # fourth check: check data type
     if [[ $(getColumnType $1 $2) == "int" ]]; then
-        if [[ $(isNumber $3) -eq 0 ]]; then
-            print "$2 must be an integer" "white" "red"
+        if [[ -n $3 && $3 != "null" && $(isNumber $3) -eq 0 ]]; then
+            print "Error: $2 must be an integer" "white" "red"
             echo 0
             return
         fi
-    elif [[ $(getColumnType $1 $2) == "varchar" ]]; then
-        if [[ $(containsColon $3) -eq 1 ]]; then
-            print "$2 must not contain :" "white" "red"
+    elif [[ -n $3 && $3 != "null" && $(getColumnType $1 $2) == "varchar" ]]; then
+        if [[ $(containsColon $3) -eq 1  && ! -z $3 ]]; then
+            print "Error: $2 must not contain :" "white" "red"
             echo 0
             return
         fi
@@ -447,10 +442,186 @@ function followConstraints() {
 
     # fifth check: check data length
     if [[ $(getColumnSize $1 $2) -lt ${#3} ]]; then
-        print "$2 must not exceed $(getColumnSize $1 $2) characters" "white" "red"
+        print "Error: $2 must not exceed $(getColumnSize $1 $2) characters" "white" "red"
         echo 0
         return
     fi
 
     echo 1
+}
+
+# function to delete a column from the metadata
+# $1: table name
+# $2: column name
+function deleteColumnFromMetadata() {
+    # Check if the metadata file exists
+    if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        return
+    fi
+
+    # remove the column name , type, size and constraints from the metadata
+    awk -v table_name="$1" -v column_name="$2" '
+    BEGIN {FS=":"; OFS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == column_name) {
+                    for (j = i; j <= NF-4; j++) {
+                        $j = $(j+4)
+                    }
+                    NF -= 4
+                    break
+                }
+            }
+            print $0
+        }
+    }
+    ' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    print "Column $2 dropped from metadata successfully." "white" "green"
+}
+
+# function to add a column to the metadata
+# $1: table name
+# $2: column name
+# $3: column type
+# $4: column size
+# $5: column constraints
+function addColumnToMetadata() {
+    # Check if the metadata file exists
+    if [[ ! -f "iti/.iti" ]]; then
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        return
+    fi
+
+    awk -v table_name="$1" -v column_name="$2" -v column_type="$3" -v column_size="$4" -v column_constraints="$5" '
+    BEGIN {FS=":"; OFS=":"}
+    {
+        if ($1 == table_name) {
+            $0 = $0 ":" column_name ":" column_type ":" column_size ":" column_constraints
+        }
+        print $0
+    }
+    print "Column $2 added to metadata successfully." "white" "green"
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    print "Column $2 added to metadata successfully." "white" "green"
+}
+
+# function to rename column
+# $1: table name
+# $2: old column name
+# $3: new column name
+function renameColumn() {
+    # Check if the metadata file exists
+    if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        return
+    fi
+
+    awk -v table_name="$1" -v old_column_name="$2" -v new_column_name="$3" '
+    BEGIN {FS=":"; OFS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == old_column_name) {
+                    $i = new_column_name
+                    break
+                }
+            }
+        }
+        print $0
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    print "Column $2 renamed to $3 successfully." "white" "green"
+}
+
+# function to modify column data type
+# $1: table name
+# $2: column name
+# $3: new column type
+function modifyColumnType() {
+    # Check if the metadata file exists
+    if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        return
+    fi
+
+    awk -v table_name="$1" -v column_name="$2" -v new_column_type="$3" '
+    BEGIN {FS=":"; OFS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == column_name) {
+                    $(i+1) = new_column_type
+                    break
+                }
+            }
+        }
+        print $0
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    print "Column $2 data type modified to $3 successfully." "white" "green"
+}
+
+# function to modify column size
+# $1: table name
+# $2: column name
+# $3: new column size
+function modifyColumnSize() {
+    # Check if the metadata file exists
+    if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        return
+    fi
+
+    awk -v table_name="$1" -v column_name="$2" -v new_column_size="$3" '
+    BEGIN {FS=":"; OFS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == column_name) {
+                    $(i+2) = new_column_size
+                    break
+                }
+            }
+        }
+        print $0
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    print "Column $2 size modified to $3 successfully." "white" "green"
+}
+
+# function to modify column constraints
+# $1: table name
+# $2: column name
+# $3: contraint to modify (pk,null,uniqe)
+# $4: new value for the constraint
+function modifyColumnConstraint() {
+    # Check if the metadata file exists
+    if [[ ! -f "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" ]]; then
+        print "Error: Metadata file for database $CURRENT_DB_NAME does not exist" "white" "red"
+        return
+    fi
+
+    awk -v table_name="$1" -v column_name="$2" -v constraint="$3" -v new_value="$4" '
+    BEGIN {FS=":"; OFS=":"}
+    {
+        if ($1 == table_name) {
+            for (i = 2; i <= NF; i+=4) {
+                if ($i == column_name) {
+                    if (constraint == "pk") 
+                    {
+                        substr($i+3, 1, 1) = new_value
+                    } 
+                    else if (constraint == "null") 
+                    {
+                        substr($i+3, 2, 1) = new_value
+                    } 
+                    else if (constraint == "unique") {
+                        substr($i+3, 3, 1)= new_value
+                    }
+                    break
+                }
+            }
+        }
+        print $0
+    }' "$CURRENT_DB_PATH/.$CURRENT_DB_NAME" > "$CURRENT_DB_PATH/.$CURRENT_DB_NAME"
+    print "Column $2 $3 modified to $4 successfully." "white" "green"
 }
